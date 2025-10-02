@@ -2,16 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut } from "lucide-react";
+import { Brain, Zap, BarChart3, LogOut, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [transcript, setTranscript] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [scores, setScores] = useState<{ user_iq: number; gpt_iq: number; conversation_iq: number } | null>(null);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -59,6 +60,7 @@ const Dashboard = () => {
 
       if (error) throw error;
 
+      setScores(mockScores);
       toast({
         title: "Analysis Complete",
         description: "Your conversation has been analyzed successfully",
@@ -77,71 +79,91 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="h-full bg-background">
-      <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-foreground">GPTIQX Dashboard</h1>
-          <Button onClick={handleSignOut} variant="ghost" size="sm" className="gap-2">
+    <div className="min-h-screen bg-black grid-pattern">
+      {/* Header */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Brain className="w-6 h-6 text-white" />
+            <span className="text-xl font-bold text-white">GPTIQX</span>
+          </div>
+          <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
             <LogOut className="h-4 w-4" />
             Sign Out
           </Button>
         </div>
+      </nav>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="border-border/40 bg-card/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">UserIQ</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-semibold text-foreground">--</p>
-              <p className="text-xs text-muted-foreground mt-1">Your prompt quality</p>
-            </CardContent>
-          </Card>
+      <div className="pt-24 pb-12 px-6">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Stats Grid */}
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="glass border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-white/60">UserIQ</CardTitle>
+                <Brain className="w-4 h-4 text-white/40" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-white mb-1">
+                  {scores?.user_iq || "--"}
+                </div>
+                <p className="text-xs text-white/40">Prompt quality score</p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-border/40 bg-card/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">GPTIQ</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-semibold text-foreground">--</p>
-              <p className="text-xs text-muted-foreground mt-1">AI response quality</p>
-            </CardContent>
-          </Card>
+            <Card className="glass border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-white/60">GPTIQ</CardTitle>
+                <Zap className="w-4 h-4 text-accent" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-white mb-1">
+                  {scores?.gpt_iq || "--"}
+                </div>
+                <p className="text-xs text-white/40">AI response quality</p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-border/40 bg-card/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">ConversationIQ</CardTitle>
+            <Card className="glass border-white/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-white/60">ConversationIQ</CardTitle>
+                <BarChart3 className="w-4 h-4 text-white/40" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-white mb-1">
+                  {scores?.conversation_iq || "--"}
+                </div>
+                <p className="text-xs text-white/40">Overall synergy</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Analysis Section */}
+          <Card className="glass border-white/10">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-accent" />
+                <CardTitle className="text-xl text-white">Analyze Conversation</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-semibold text-foreground">--</p>
-              <p className="text-xs text-muted-foreground mt-1">Overall synergy</p>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Paste your conversation transcript here..."
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                className="min-h-[300px] resize-none bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20"
+              />
+              <Button 
+                onClick={handleAnalyze} 
+                disabled={isAnalyzing}
+                className="w-full glow-white"
+                size="lg"
+              >
+                {isAnalyzing ? "Analyzing..." : "Analyze Conversation"}
+              </Button>
             </CardContent>
           </Card>
         </div>
-
-        <Card className="border-border/40 bg-card/50">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Analyze Conversation</CardTitle>
-            <CardDescription>Paste your conversation transcript to get IQ scores</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              placeholder="Paste your conversation here..."
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
-              className="min-h-[250px] resize-none bg-background border-border/40 focus-visible:ring-1"
-            />
-            <Button 
-              onClick={handleAnalyze} 
-              disabled={isAnalyzing}
-              className="w-full gap-2"
-              variant="default"
-            >
-              <Upload className="h-4 w-4" />
-              {isAnalyzing ? "Analyzing..." : "Analyze Conversation"}
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

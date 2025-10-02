@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Brain } from "lucide-react";
+import { Brain, Mail, Lock } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -51,54 +51,63 @@ const Auth = () => {
   };
 
   return (
-    <div className="h-full bg-background flex items-center justify-center px-6">
-      <Card className="w-full max-w-md border-border/40 bg-card/50">
-        <CardHeader className="text-center space-y-2">
-          <div className="flex justify-center mb-2">
-            <Brain className="w-10 h-10 text-primary" />
+    <div className="min-h-screen bg-black grid-pattern flex items-center justify-center px-6">
+      <Card className="w-full max-w-md glass border-white/10">
+        <CardHeader className="text-center space-y-4 pb-8">
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center">
+              <Brain className="w-8 h-8 text-white" />
+            </div>
           </div>
-          <CardTitle className="text-2xl font-semibold">GPTIQX</CardTitle>
-          <CardDescription>
-            {isSignUp ? "Create your account" : "Sign in to continue"}
-          </CardDescription>
+          <div>
+            <CardTitle className="text-3xl font-bold text-white mb-2">GPTIQX</CardTitle>
+            <p className="text-white/60 text-sm">
+              {isSignUp ? "Create your account" : "Sign in to continue"}
+            </p>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-background border-border/40"
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-white/40" />
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20"
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-background border-border/40"
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-white/40" />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20"
+                />
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+            <Button type="submit" className="w-full glow-white" size="lg" disabled={isLoading}>
+              {isLoading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
             </Button>
           </form>
           
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
+          <div className="mt-6 text-center">
+            <button
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-sm text-white/60 hover:text-white transition-colors"
             >
               {isSignUp
                 ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
-            </Button>
+            </button>
           </div>
         </CardContent>
       </Card>
