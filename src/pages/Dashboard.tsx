@@ -1,18 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Zap, BarChart3, LogOut, Sparkles } from "lucide-react";
+import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [transcript, setTranscript] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [scores, setScores] = useState<{ user_iq: number; gpt_iq: number; conversation_iq: number } | null>(null);
+  const [scores, setScores] = useState<any>(null);
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("30d");
+
+  useEffect(() => {
+    fetchConversations();
+  }, [dateFilter]);
+
+  const fetchConversations = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    let query = supabase
+      .from("conversations")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+
+    if (dateFilter === "7d") {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      query = query.gte("created_at", sevenDaysAgo.toISOString());
+    } else if (dateFilter === "30d") {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      query = query.gte("created_at", thirtyDaysAgo.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (!error && data) {
+      setConversations(data);
+      if (data.length > 0) {
+        const latest = data[data.length - 1];
+        setScores(latest);
+      }
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -30,12 +69,6 @@ const Dashboard = () => {
     }
 
     setIsAnalyzing(true);
-    
-    const mockScores = {
-      user_iq: Math.floor(Math.random() * 30) + 70,
-      gpt_iq: Math.floor(Math.random() * 30) + 70,
-      conversation_iq: Math.floor(Math.random() * 30) + 70,
-    };
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -48,35 +81,63 @@ const Dashboard = () => {
         });
         return;
       }
-      
-      const { error } = await supabase.from("conversations").insert({
+
+      // Call the AI analysis edge function
+      const { data: analysisData, error: functionError } = await supabase.functions.invoke(
+        "analyze-conversation",
+        { body: { transcript } }
+      );
+
+      if (functionError) throw functionError;
+
+      // Insert the analyzed conversation into the database
+      const { error: insertError } = await supabase.from("conversations").insert({
         user_id: user.id,
-        title: "New Analysis",
+        title: `Analysis ${new Date().toLocaleDateString()}`,
         transcript,
-        user_iq: mockScores.user_iq,
-        gpt_iq: mockScores.gpt_iq,
-        conversation_iq: mockScores.conversation_iq,
+        user_iq: analysisData.user_iq,
+        user_clarity: analysisData.user_clarity,
+        user_depth: analysisData.user_depth,
+        user_creativity: analysisData.user_creativity,
+        gpt_iq: analysisData.gpt_iq,
+        gpt_clarity: analysisData.gpt_clarity,
+        gpt_depth: analysisData.gpt_depth,
+        gpt_flow: analysisData.gpt_flow,
+        conversation_iq: analysisData.conversation_iq,
+        conversation_flow: analysisData.conversation_flow,
+        conversation_synergy: analysisData.conversation_synergy,
+        justification: analysisData.justification,
       });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
-      setScores(mockScores);
+      setScores(analysisData);
+      await fetchConversations();
+      
       toast({
         title: "Analysis Complete",
         description: "Your conversation has been analyzed successfully",
       });
       
       setTranscript("");
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Analysis error:", error);
       toast({
         title: "Error",
-        description: "Failed to analyze conversation",
+        description: error.message || "Failed to analyze conversation",
         variant: "destructive",
       });
     } finally {
       setIsAnalyzing(false);
     }
   };
+
+  const chartData = conversations.map((conv) => ({
+    date: new Date(conv.created_at).toLocaleDateString(),
+    UserIQ: conv.user_iq,
+    GPTIQ: conv.gpt_iq,
+    ConversationIQ: conv.conversation_iq,
+  }));
 
   return (
     <div className="min-h-screen bg-black grid-pattern">
@@ -95,10 +156,10 @@ const Dashboard = () => {
       </nav>
 
       <div className="pt-24 pb-12 px-6">
-        <div className="max-w-6xl mx-auto space-y-8">
-          {/* Stats Grid */}
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Main IQ Scores */}
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="glass border-white/10">
+            <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-white/60">UserIQ</CardTitle>
                 <Brain className="w-4 h-4 text-white/40" />
@@ -111,7 +172,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass border-white/10">
+            <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-white/60">GPTIQ</CardTitle>
                 <Zap className="w-4 h-4 text-accent" />
@@ -124,7 +185,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass border-white/10">
+            <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-white/60">ConversationIQ</CardTitle>
                 <BarChart3 className="w-4 h-4 text-white/40" />
@@ -137,6 +198,217 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Score Breakdowns */}
+          {scores && (
+            <TooltipProvider>
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* UserIQ Breakdown */}
+                <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-white/60" />
+                      UserIQ Breakdown
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Clarity</span>
+                          <span className="font-bold text-white">{scores.user_clarity || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How clear and well-structured are the prompts?</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Depth</span>
+                          <span className="font-bold text-white">{scores.user_depth || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How thoughtful and detailed are the questions?</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Creativity</span>
+                          <span className="font-bold text-white">{scores.user_creativity || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How original and innovative are the prompts?</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardContent>
+                </Card>
+
+                {/* GPTIQ Breakdown */}
+                <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-accent" />
+                      GPTIQ Breakdown
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Clarity</span>
+                          <span className="font-bold text-white">{scores.gpt_clarity || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How clear and understandable are the responses?</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Depth</span>
+                          <span className="font-bold text-white">{scores.gpt_depth || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How comprehensive and detailed are the answers?</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Flow</span>
+                          <span className="font-bold text-white">{scores.gpt_flow || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How well does GPT maintain context and flow?</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardContent>
+                </Card>
+
+                {/* ConversationIQ Breakdown */}
+                <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-white/60" />
+                      ConversationIQ Breakdown
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Flow</span>
+                          <span className="font-bold text-white">{scores.conversation_flow || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How natural is the conversation progression?</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                          <span className="text-white/80">Synergy</span>
+                          <span className="font-bold text-white">{scores.conversation_synergy || "--"}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>How well do user and GPT complement each other?</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Justification */}
+              {scores.justification && (
+                <Card className="glass border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-accent" />
+                      Analysis Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white/80 leading-relaxed">{scores.justification}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TooltipProvider>
+          )}
+
+          {/* Trend Graphs */}
+          {conversations.length > 0 && (
+            <Card className="glass border-white/10">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl text-white flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-accent" />
+                    IQ Trends Over Time
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={dateFilter === "7d" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDateFilter("7d")}
+                      className="text-xs"
+                    >
+                      7 Days
+                    </Button>
+                    <Button
+                      variant={dateFilter === "30d" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDateFilter("30d")}
+                      className="text-xs"
+                    >
+                      30 Days
+                    </Button>
+                    <Button
+                      variant={dateFilter === "all" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDateFilter("all")}
+                      className="text-xs"
+                    >
+                      All Time
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis dataKey="date" stroke="rgba(255,255,255,0.6)" />
+                    <YAxis stroke="rgba(255,255,255,0.6)" />
+                    <RechartsTooltip 
+                      contentStyle={{ 
+                        backgroundColor: "rgba(0,0,0,0.9)", 
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "8px"
+                      }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="UserIQ" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="GPTIQ" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="ConversationIQ" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Analysis Section */}
           <Card className="glass border-white/10">

@@ -17,43 +17,70 @@ export type Database = {
       conversations: {
         Row: {
           analysis_details: Json | null
+          conversation_flow: number | null
           conversation_iq: number | null
+          conversation_synergy: number | null
           created_at: string | null
+          gpt_clarity: number | null
+          gpt_depth: number | null
+          gpt_flow: number | null
           gpt_iq: number | null
           id: string
+          justification: string | null
           raw_conversation_score: number | null
           raw_gpt_score: number | null
           raw_user_score: number | null
           title: string
           transcript: string
+          user_clarity: number | null
+          user_creativity: number | null
+          user_depth: number | null
           user_id: string
           user_iq: number | null
         }
         Insert: {
           analysis_details?: Json | null
+          conversation_flow?: number | null
           conversation_iq?: number | null
+          conversation_synergy?: number | null
           created_at?: string | null
+          gpt_clarity?: number | null
+          gpt_depth?: number | null
+          gpt_flow?: number | null
           gpt_iq?: number | null
           id?: string
+          justification?: string | null
           raw_conversation_score?: number | null
           raw_gpt_score?: number | null
           raw_user_score?: number | null
           title: string
           transcript: string
+          user_clarity?: number | null
+          user_creativity?: number | null
+          user_depth?: number | null
           user_id: string
           user_iq?: number | null
         }
         Update: {
           analysis_details?: Json | null
+          conversation_flow?: number | null
           conversation_iq?: number | null
+          conversation_synergy?: number | null
           created_at?: string | null
+          gpt_clarity?: number | null
+          gpt_depth?: number | null
+          gpt_flow?: number | null
           gpt_iq?: number | null
           id?: string
+          justification?: string | null
           raw_conversation_score?: number | null
           raw_gpt_score?: number | null
           raw_user_score?: number | null
           title?: string
           transcript?: string
+          user_clarity?: number | null
+          user_creativity?: number | null
+          user_depth?: number | null
           user_id?: string
           user_iq?: number | null
         }
