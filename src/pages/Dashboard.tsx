@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar } from "lucide-react";
+import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -90,10 +90,15 @@ const Dashboard = () => {
 
       if (functionError) throw functionError;
 
+      // Generate title from first 6-8 words of transcript
+      const words = transcript.trim().split(/\s+/);
+      const titleWords = words.slice(0, Math.min(8, words.length));
+      const generatedTitle = titleWords.join(" ") + (words.length > 8 ? "..." : "");
+
       // Insert the analyzed conversation into the database
       const { error: insertError } = await supabase.from("conversations").insert({
         user_id: user.id,
-        title: `Analysis ${new Date().toLocaleDateString()}`,
+        title: generatedTitle,
         transcript,
         user_iq: analysisData.user_iq,
         user_clarity: analysisData.user_clarity,
@@ -148,10 +153,16 @@ const Dashboard = () => {
             <Brain className="w-6 h-6 text-white" />
             <span className="text-xl font-bold text-white">GPTIQX</span>
           </div>
-          <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={() => navigate("/history")} className="gap-2">
+              <History className="h-4 w-4" />
+              History
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </nav>
 
