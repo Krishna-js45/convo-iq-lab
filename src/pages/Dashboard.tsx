@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History } from "lucide-react";
+import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History, TrendingDown, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ const Dashboard = () => {
   const [scores, setScores] = useState<any>(null);
   const [conversations, setConversations] = useState<any[]>([]);
   const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("30d");
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const [showConversationDialog, setShowConversationDialog] = useState(false);
 
   useEffect(() => {
     fetchConversations();
@@ -143,6 +146,46 @@ const Dashboard = () => {
     GPTIQ: conv.gpt_iq,
     ConversationIQ: conv.conversation_iq,
   }));
+
+  // Calculate averages
+  const calculateAverage = (field: string) => {
+    if (conversations.length === 0) return 0;
+    const sum = conversations.reduce((acc, conv) => acc + (conv[field] || 0), 0);
+    return Math.round(sum / conversations.length);
+  };
+
+  const avgUserIQ = calculateAverage("user_iq");
+  const avgGPTIQ = calculateAverage("gpt_iq");
+  const avgConversationIQ = calculateAverage("conversation_iq");
+
+  // Find highest and lowest scoring conversations
+  const getHighestLowest = () => {
+    if (conversations.length === 0) return { highest: null, lowest: null };
+    
+    let highest = conversations[0];
+    let lowest = conversations[0];
+
+    conversations.forEach(conv => {
+      const convTotal = (conv.user_iq || 0) + (conv.gpt_iq || 0) + (conv.conversation_iq || 0);
+      const highestTotal = (highest.user_iq || 0) + (highest.gpt_iq || 0) + (highest.conversation_iq || 0);
+      const lowestTotal = (lowest.user_iq || 0) + (lowest.gpt_iq || 0) + (lowest.conversation_iq || 0);
+
+      if (convTotal > highestTotal) highest = conv;
+      if (convTotal < lowestTotal) lowest = conv;
+    });
+
+    return { highest, lowest };
+  };
+
+  const { highest, lowest } = getHighestLowest();
+
+  // Get latest 3 conversations
+  const latestConversations = [...conversations].reverse().slice(0, 3);
+
+  const openConversationDetails = (conversation: any) => {
+    setSelectedConversation(conversation);
+    setShowConversationDialog(true);
+  };
 
   return (
     <div className="min-h-screen bg-black grid-pattern">
@@ -361,6 +404,130 @@ const Dashboard = () => {
             </TooltipProvider>
           )}
 
+          {/* Analytics & Averages */}
+          {conversations.length > 0 && (
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium text-white/60">Average UserIQ</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">{avgUserIQ}</div>
+                  <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium text-white/60">Average GPTIQ</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">{avgGPTIQ}</div>
+                  <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium text-white/60">Average ConversationIQ</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-white">{avgConversationIQ}</div>
+                  <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Highlights */}
+          {conversations.length > 0 && highest && lowest && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="glass border-white/10 hover:border-green-500/30 transition-all duration-300 cursor-pointer group" onClick={() => openConversationDetails(highest)}>
+                <CardHeader>
+                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                    <ArrowUpRight className="w-5 h-5 text-green-500" />
+                    Highest Scoring Conversation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-white/80 font-medium truncate">{highest.title}</p>
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-white/60">UserIQ: <span className="text-white font-bold">{highest.user_iq}</span></span>
+                    <span className="text-white/60">GPTIQ: <span className="text-white font-bold">{highest.gpt_iq}</span></span>
+                    <span className="text-white/60">ConvIQ: <span className="text-white font-bold">{highest.conversation_iq}</span></span>
+                  </div>
+                  <p className="text-xs text-white/40 mt-2">{new Date(highest.created_at).toLocaleDateString()}</p>
+                  <p className="text-xs text-accent mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Click to view details →</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass border-white/10 hover:border-red-500/30 transition-all duration-300 cursor-pointer group" onClick={() => openConversationDetails(lowest)}>
+                <CardHeader>
+                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                    <ArrowDownRight className="w-5 h-5 text-red-500" />
+                    Lowest Scoring Conversation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-white/80 font-medium truncate">{lowest.title}</p>
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-white/60">UserIQ: <span className="text-white font-bold">{lowest.user_iq}</span></span>
+                    <span className="text-white/60">GPTIQ: <span className="text-white font-bold">{lowest.gpt_iq}</span></span>
+                    <span className="text-white/60">ConvIQ: <span className="text-white font-bold">{lowest.conversation_iq}</span></span>
+                  </div>
+                  <p className="text-xs text-white/40 mt-2">{new Date(lowest.created_at).toLocaleDateString()}</p>
+                  <p className="text-xs text-accent mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Click to view details →</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Latest Conversations */}
+          {latestConversations.length > 0 && (
+            <Card className="glass border-white/10">
+              <CardHeader>
+                <CardTitle className="text-xl text-white flex items-center gap-2">
+                  <History className="w-5 h-5 text-white/60" />
+                  Latest Conversations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {latestConversations.map((conv) => (
+                    <div
+                      key={conv.id}
+                      onClick={() => openConversationDetails(conv)}
+                      className="p-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent/50 transition-all cursor-pointer group"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-white font-medium truncate flex-1 pr-4 group-hover:text-accent transition-colors">
+                          {conv.title}
+                        </h3>
+                        <span className="text-xs text-white/40 whitespace-nowrap">
+                          {new Date(conv.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Brain className="w-3 h-3 text-white/40" />
+                          <span className="text-white/60">UserIQ: <span className="text-white font-bold">{conv.user_iq}</span></span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Zap className="w-3 h-3 text-accent" />
+                          <span className="text-white/60">GPTIQ: <span className="text-white font-bold">{conv.gpt_iq}</span></span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <BarChart3 className="w-3 h-3 text-white/40" />
+                          <span className="text-white/60">ConvIQ: <span className="text-white font-bold">{conv.conversation_iq}</span></span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Trend Graphs */}
           {conversations.length > 0 && (
             <Card className="glass border-white/10">
@@ -402,19 +569,56 @@ const Dashboard = () => {
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis dataKey="date" stroke="rgba(255,255,255,0.6)" />
-                    <YAxis stroke="rgba(255,255,255,0.6)" />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="rgba(255,255,255,0.6)"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <YAxis 
+                      stroke="rgba(255,255,255,0.6)"
+                      style={{ fontSize: '12px' }}
+                    />
                     <RechartsTooltip 
                       contentStyle={{ 
-                        backgroundColor: "rgba(0,0,0,0.9)", 
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        borderRadius: "8px"
+                        backgroundColor: "rgba(0,0,0,0.95)", 
+                        border: "1px solid rgba(255,255,255,0.3)",
+                        borderRadius: "8px",
+                        padding: "12px"
                       }}
+                      labelStyle={{ color: "rgba(255,255,255,0.8)", marginBottom: "8px" }}
+                      itemStyle={{ color: "rgba(255,255,255,1)" }}
                     />
-                    <Legend />
-                    <Line type="monotone" dataKey="UserIQ" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="GPTIQ" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="ConversationIQ" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: "20px" }}
+                      iconType="line"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="UserIQ" 
+                      stroke="#3b82f6" 
+                      strokeWidth={3} 
+                      dot={{ r: 5, strokeWidth: 2, fill: "#3b82f6" }}
+                      activeDot={{ r: 7 }}
+                      name="User IQ"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="GPTIQ" 
+                      stroke="#10b981" 
+                      strokeWidth={3} 
+                      dot={{ r: 5, strokeWidth: 2, fill: "#10b981" }}
+                      activeDot={{ r: 7 }}
+                      name="GPT IQ"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="ConversationIQ" 
+                      stroke="#f59e0b" 
+                      strokeWidth={3} 
+                      dot={{ r: 5, strokeWidth: 2, fill: "#f59e0b" }}
+                      activeDot={{ r: 7 }}
+                      name="Conversation IQ"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -448,6 +652,112 @@ const Dashboard = () => {
           </Card>
         </div>
       </div>
+
+      {/* Conversation Details Dialog */}
+      <Dialog open={showConversationDialog} onOpenChange={setShowConversationDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] bg-black/95 border-white/20 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-white flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-accent" />
+              {selectedConversation?.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedConversation && (
+            <ScrollArea className="h-[70vh] pr-4">
+              <div className="space-y-6">
+                {/* IQ Scores */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="glass p-4 rounded-lg border border-white/10">
+                    <div className="text-sm text-white/60 mb-1">UserIQ</div>
+                    <div className="text-3xl font-bold text-white">{selectedConversation.user_iq}</div>
+                  </div>
+                  <div className="glass p-4 rounded-lg border border-white/10">
+                    <div className="text-sm text-white/60 mb-1">GPTIQ</div>
+                    <div className="text-3xl font-bold text-white">{selectedConversation.gpt_iq}</div>
+                  </div>
+                  <div className="glass p-4 rounded-lg border border-white/10">
+                    <div className="text-sm text-white/60 mb-1">ConversationIQ</div>
+                    <div className="text-3xl font-bold text-white">{selectedConversation.conversation_iq}</div>
+                  </div>
+                </div>
+
+                {/* Score Breakdowns */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="glass p-4 rounded-lg border border-white/10">
+                    <h4 className="text-sm font-semibold text-white mb-3">UserIQ Breakdown</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Clarity</span>
+                        <span className="text-white font-bold">{selectedConversation.user_clarity}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Depth</span>
+                        <span className="text-white font-bold">{selectedConversation.user_depth}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Creativity</span>
+                        <span className="text-white font-bold">{selectedConversation.user_creativity}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="glass p-4 rounded-lg border border-white/10">
+                    <h4 className="text-sm font-semibold text-white mb-3">GPTIQ Breakdown</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Clarity</span>
+                        <span className="text-white font-bold">{selectedConversation.gpt_clarity}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Depth</span>
+                        <span className="text-white font-bold">{selectedConversation.gpt_depth}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Flow</span>
+                        <span className="text-white font-bold">{selectedConversation.gpt_flow}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="glass p-4 rounded-lg border border-white/10">
+                    <h4 className="text-sm font-semibold text-white mb-3">ConversationIQ Breakdown</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Flow</span>
+                        <span className="text-white font-bold">{selectedConversation.conversation_flow}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/60">Synergy</span>
+                        <span className="text-white font-bold">{selectedConversation.conversation_synergy}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Justification */}
+                {selectedConversation.justification && (
+                  <div className="glass p-4 rounded-lg border border-white/10">
+                    <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-accent" />
+                      Analysis Summary
+                    </h4>
+                    <p className="text-white/80 text-sm leading-relaxed">{selectedConversation.justification}</p>
+                  </div>
+                )}
+
+                {/* Full Transcript */}
+                <div className="glass p-4 rounded-lg border border-white/10">
+                  <h4 className="text-sm font-semibold text-white mb-2">Full Transcript</h4>
+                  <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">
+                    {selectedConversation.transcript}
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
