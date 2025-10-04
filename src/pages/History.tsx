@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, ArrowLeft, Trash2, Calendar, TrendingUp } from "lucide-react";
+import { Brain, ArrowLeft, Trash2, Calendar, Download, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface Conversation {
   id: string;
@@ -107,6 +109,184 @@ const History = () => {
       month: "short",
       day: "numeric",
       year: "numeric",
+    });
+  };
+
+  const exportToPDF = (conversation: Conversation) => {
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(0, 0, 0);
+    doc.text(conversation.title, 20, 20);
+    
+    // Date
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(formatDate(conversation.created_at), 20, 28);
+    
+    // Main Scores Table
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Intelligence Quotient Scores", 20, 40);
+    
+    autoTable(doc, {
+      startY: 45,
+      head: [['Metric', 'Score']],
+      body: [
+        ['UserIQ', conversation.user_iq.toString()],
+        ['GPTIQ', conversation.gpt_iq.toString()],
+        ['ConversationIQ', conversation.conversation_iq.toString()],
+      ],
+      theme: 'grid',
+    });
+    
+    // Score Breakdowns
+    let currentY = (doc as any).lastAutoTable.finalY + 10;
+    
+    if (conversation.user_clarity) {
+      doc.text("UserIQ Breakdown", 20, currentY);
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Component', 'Score']],
+        body: [
+          ['Clarity', conversation.user_clarity.toString()],
+          ['Depth', conversation.user_depth?.toString() || 'N/A'],
+          ['Creativity', conversation.user_creativity?.toString() || 'N/A'],
+        ],
+        theme: 'grid',
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    if (conversation.gpt_clarity) {
+      doc.text("GPTIQ Breakdown", 20, currentY);
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Component', 'Score']],
+        body: [
+          ['Clarity', conversation.gpt_clarity.toString()],
+          ['Depth', conversation.gpt_depth?.toString() || 'N/A'],
+          ['Flow', conversation.gpt_flow?.toString() || 'N/A'],
+        ],
+        theme: 'grid',
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    if (conversation.conversation_flow) {
+      doc.text("ConversationIQ Breakdown", 20, currentY);
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Component', 'Score']],
+        body: [
+          ['Flow', conversation.conversation_flow.toString()],
+          ['Synergy', conversation.conversation_synergy?.toString() || 'N/A'],
+        ],
+        theme: 'grid',
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    // Justification
+    if (conversation.justification) {
+      doc.addPage();
+      doc.setFontSize(12);
+      doc.text("Analysis Summary", 20, 20);
+      doc.setFontSize(10);
+      const splitText = doc.splitTextToSize(conversation.justification, 170);
+      doc.text(splitText, 20, 30);
+    }
+    
+    // Transcript
+    doc.addPage();
+    doc.setFontSize(12);
+    doc.text("Full Transcript", 20, 20);
+    doc.setFontSize(10);
+    const splitTranscript = doc.splitTextToSize(conversation.transcript, 170);
+    doc.text(splitTranscript, 20, 30);
+    
+    // Save
+    doc.save(`${conversation.title.replace(/[^a-z0-9]/gi, '_')}_analysis.pdf`);
+    
+    toast({
+      title: "Exported",
+      description: "Conversation exported as PDF",
+    });
+  };
+
+  const exportToCSV = (conversation: Conversation) => {
+    const csvRows = [];
+    
+    // Header
+    csvRows.push(['GPTIQX Analysis Report']);
+    csvRows.push(['Title', conversation.title]);
+    csvRows.push(['Date', formatDate(conversation.created_at)]);
+    csvRows.push([]);
+    
+    // Main Scores
+    csvRows.push(['Main Scores']);
+    csvRows.push(['Metric', 'Score']);
+    csvRows.push(['UserIQ', conversation.user_iq]);
+    csvRows.push(['GPTIQ', conversation.gpt_iq]);
+    csvRows.push(['ConversationIQ', conversation.conversation_iq]);
+    csvRows.push([]);
+    
+    // Breakdowns
+    if (conversation.user_clarity) {
+      csvRows.push(['UserIQ Breakdown']);
+      csvRows.push(['Component', 'Score']);
+      csvRows.push(['Clarity', conversation.user_clarity]);
+      csvRows.push(['Depth', conversation.user_depth || 'N/A']);
+      csvRows.push(['Creativity', conversation.user_creativity || 'N/A']);
+      csvRows.push([]);
+    }
+    
+    if (conversation.gpt_clarity) {
+      csvRows.push(['GPTIQ Breakdown']);
+      csvRows.push(['Component', 'Score']);
+      csvRows.push(['Clarity', conversation.gpt_clarity]);
+      csvRows.push(['Depth', conversation.gpt_depth || 'N/A']);
+      csvRows.push(['Flow', conversation.gpt_flow || 'N/A']);
+      csvRows.push([]);
+    }
+    
+    if (conversation.conversation_flow) {
+      csvRows.push(['ConversationIQ Breakdown']);
+      csvRows.push(['Component', 'Score']);
+      csvRows.push(['Flow', conversation.conversation_flow]);
+      csvRows.push(['Synergy', conversation.conversation_synergy || 'N/A']);
+      csvRows.push([]);
+    }
+    
+    // Justification
+    if (conversation.justification) {
+      csvRows.push(['Analysis Summary']);
+      csvRows.push([conversation.justification]);
+      csvRows.push([]);
+    }
+    
+    // Transcript
+    csvRows.push(['Full Transcript']);
+    csvRows.push([conversation.transcript]);
+    
+    // Convert to CSV string
+    const csvContent = csvRows.map(row => 
+      row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+    
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${conversation.title.replace(/[^a-z0-9]/gi, '_')}_analysis.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Exported",
+      description: "Conversation exported as CSV",
     });
   };
 
@@ -218,13 +398,55 @@ const History = () => {
           {selectedConversation && (
             <div className="space-y-6">
               <DialogHeader>
-                <DialogTitle className="text-2xl text-white flex items-center gap-2">
-                  <Brain className="w-6 h-6 text-accent" />
-                  {selectedConversation.title}
-                </DialogTitle>
-                <p className="text-white/40 text-sm">
-                  {formatDate(selectedConversation.created_at)}
-                </p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <DialogTitle className="text-2xl text-white flex items-center gap-2">
+                      <Brain className="w-6 h-6 text-accent" />
+                      {selectedConversation.title}
+                    </DialogTitle>
+                    <p className="text-white/40 text-sm mt-1">
+                      {formatDate(selectedConversation.created_at)}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => exportToPDF(selectedConversation)}
+                            className="gap-2 border-white/20 text-white hover:bg-white/10"
+                          >
+                            <FileText className="w-4 h-4" />
+                            PDF
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Export as PDF</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => exportToCSV(selectedConversation)}
+                            className="gap-2 border-white/20 text-white hover:bg-white/10"
+                          >
+                            <Download className="w-4 h-4" />
+                            CSV
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Export as CSV</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
               </DialogHeader>
 
               {/* Main Scores */}
