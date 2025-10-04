@@ -95,6 +95,125 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Subscription Plans */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              Choose Your Plan
+            </h2>
+            <p className="text-white/60 text-lg">
+              Start free or unlock unlimited analyses with Pro
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Tier */}
+            <div className="glass p-8 rounded-2xl hover:bg-white/10 transition-all border border-white/10">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-white">$0</span>
+                  <span className="text-white/60">/month</span>
+                </div>
+              </div>
+
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs">✓</span>
+                  </div>
+                  <span>3 analyses per day</span>
+                </li>
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs">✓</span>
+                  </div>
+                  <span>UserIQ, GPTIQ & ConversationIQ scores</span>
+                </li>
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs">✓</span>
+                  </div>
+                  <span>Conversation history</span>
+                </li>
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs">✓</span>
+                  </div>
+                  <span>Basic analytics</span>
+                </li>
+              </ul>
+
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => navigate("/auth")}
+                className="w-full"
+              >
+                Try Free
+              </Button>
+            </div>
+
+            {/* Pro Tier */}
+            <div className="glass p-8 rounded-2xl hover:bg-white/10 transition-all border-2 border-accent/50 relative glow-accent">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-accent rounded-full">
+                <span className="text-xs font-semibold text-black">POPULAR</span>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-white">$25</span>
+                  <span className="text-white/60">/month</span>
+                </div>
+              </div>
+
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-accent/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs text-accent">✓</span>
+                  </div>
+                  <span className="font-semibold text-white">Unlimited analyses</span>
+                </li>
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-accent/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs text-accent">✓</span>
+                  </div>
+                  <span>Advanced analytics & insights</span>
+                </li>
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-accent/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs text-accent">✓</span>
+                  </div>
+                  <span>Priority support</span>
+                </li>
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-accent/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs text-accent">✓</span>
+                  </div>
+                  <span>Export to PDF & CSV</span>
+                </li>
+                <li className="flex items-start gap-3 text-white/80">
+                  <div className="w-5 h-5 rounded-full bg-accent/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs text-accent">✓</span>
+                  </div>
+                  <span>Custom branding options</span>
+                </li>
+              </ul>
+
+              <Button 
+                size="lg" 
+                onClick={() => navigate("/auth")}
+                className="w-full glow-white"
+              >
+                Subscribe Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center glass p-12 rounded-2xl">
