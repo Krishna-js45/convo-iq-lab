@@ -154,9 +154,47 @@ const Dashboard = () => {
     return Math.round(sum / conversations.length);
   };
 
+  // Calculate week-over-week comparison
+  const calculateWeekComparison = (field: string) => {
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    const currentWeek = conversations
+      .filter(c => new Date(c.created_at) >= oneWeekAgo)
+      .map(c => c[field])
+      .filter((val): val is number => val !== null && val !== undefined);
+    
+    const previousWeek = conversations
+      .filter(c => {
+        const date = new Date(c.created_at);
+        return date >= twoWeeksAgo && date < oneWeekAgo;
+      })
+      .map(c => c[field])
+      .filter((val): val is number => val !== null && val !== undefined);
+
+    const currentAvg = currentWeek.length > 0 
+      ? currentWeek.reduce((sum, val) => sum + val, 0) / currentWeek.length 
+      : 0;
+    const previousAvg = previousWeek.length > 0 
+      ? previousWeek.reduce((sum, val) => sum + val, 0) / previousWeek.length 
+      : 0;
+
+    return {
+      current: Math.round(currentAvg),
+      previous: Math.round(previousAvg),
+      diff: Math.round(currentAvg - previousAvg),
+      hasPrevious: previousWeek.length > 0
+    };
+  };
+
   const avgUserIQ = calculateAverage("user_iq");
   const avgGPTIQ = calculateAverage("gpt_iq");
   const avgConversationIQ = calculateAverage("conversation_iq");
+  
+  const userComparison = calculateWeekComparison("user_iq");
+  const gptComparison = calculateWeekComparison("gpt_iq");
+  const convComparison = calculateWeekComparison("conversation_iq");
 
   // Find highest and lowest scoring conversations
   const getHighestLowest = () => {
@@ -407,33 +445,75 @@ const Dashboard = () => {
           {/* Analytics & Averages */}
           {conversations.length > 0 && (
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300">
+              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300 animate-fade-in">
                 <CardHeader>
                   <CardTitle className="text-sm font-medium text-white/60">Average UserIQ</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white">{avgUserIQ}</div>
-                  <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                  <div className="text-3xl font-bold text-white mb-2">{avgUserIQ}</div>
+                  {userComparison.hasPrevious && (
+                    <div className={`flex items-center gap-1 text-sm ${userComparison.diff > 0 ? 'text-green-400' : userComparison.diff < 0 ? 'text-red-400' : 'text-white/60'}`}>
+                      {userComparison.diff > 0 ? (
+                        <><TrendingUp className="h-4 w-4" /> +{userComparison.diff}</>
+                      ) : userComparison.diff < 0 ? (
+                        <><TrendingDown className="h-4 w-4" /> {userComparison.diff}</>
+                      ) : (
+                        <span>No change</span>
+                      )}
+                      <span className="text-white/40 ml-1">vs last week</span>
+                    </div>
+                  )}
+                  {!userComparison.hasPrevious && (
+                    <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                  )}
                 </CardContent>
               </Card>
 
-              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300">
+              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
                 <CardHeader>
                   <CardTitle className="text-sm font-medium text-white/60">Average GPTIQ</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white">{avgGPTIQ}</div>
-                  <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                  <div className="text-3xl font-bold text-white mb-2">{avgGPTIQ}</div>
+                  {gptComparison.hasPrevious && (
+                    <div className={`flex items-center gap-1 text-sm ${gptComparison.diff > 0 ? 'text-green-400' : gptComparison.diff < 0 ? 'text-red-400' : 'text-white/60'}`}>
+                      {gptComparison.diff > 0 ? (
+                        <><TrendingUp className="h-4 w-4" /> +{gptComparison.diff}</>
+                      ) : gptComparison.diff < 0 ? (
+                        <><TrendingDown className="h-4 w-4" /> {gptComparison.diff}</>
+                      ) : (
+                        <span>No change</span>
+                      )}
+                      <span className="text-white/40 ml-1">vs last week</span>
+                    </div>
+                  )}
+                  {!gptComparison.hasPrevious && (
+                    <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                  )}
                 </CardContent>
               </Card>
 
-              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300">
+              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
                 <CardHeader>
                   <CardTitle className="text-sm font-medium text-white/60">Average ConversationIQ</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white">{avgConversationIQ}</div>
-                  <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                  <div className="text-3xl font-bold text-white mb-2">{avgConversationIQ}</div>
+                  {convComparison.hasPrevious && (
+                    <div className={`flex items-center gap-1 text-sm ${convComparison.diff > 0 ? 'text-green-400' : convComparison.diff < 0 ? 'text-red-400' : 'text-white/60'}`}>
+                      {convComparison.diff > 0 ? (
+                        <><TrendingUp className="h-4 w-4" /> +{convComparison.diff}</>
+                      ) : convComparison.diff < 0 ? (
+                        <><TrendingDown className="h-4 w-4" /> {convComparison.diff}</>
+                      ) : (
+                        <span>No change</span>
+                      )}
+                      <span className="text-white/40 ml-1">vs last week</span>
+                    </div>
+                  )}
+                  {!convComparison.hasPrevious && (
+                    <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
+                  )}
                 </CardContent>
               </Card>
             </div>
