@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Brain, Mail, Lock } from "lucide-react";
-import { FcGoogle } from "react-icons/fc";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -54,25 +53,6 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-black grid-pattern flex items-center justify-center px-6">
@@ -122,27 +102,6 @@ const Auth = () => {
               {isLoading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
             </Button>
           </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/10" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-black px-2 text-white/40">Or continue with</span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full bg-white hover:bg-white/90 text-black border-white/20"
-            size="lg"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            <FcGoogle className="w-5 h-5 mr-2" />
-            Sign in with Google
-          </Button>
           
           <div className="mt-6 text-center">
             <button
