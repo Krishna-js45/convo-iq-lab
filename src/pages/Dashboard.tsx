@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,10 +22,33 @@ const Dashboard = () => {
   const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("30d");
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [showConversationDialog, setShowConversationDialog] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ email: string; full_name: string; avatar_url: string } | null>(null);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     fetchConversations();
   }, [dateFilter]);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/auth");
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email, full_name, avatar_url")
+      .eq("id", session.user.id)
+      .single();
+
+    if (profile) {
+      setUserProfile(profile);
+    }
+  };
 
   const fetchConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -234,14 +258,30 @@ const Dashboard = () => {
             <Brain className="w-6 h-6 text-white" />
             <span className="text-xl font-bold text-white">GPTIQX</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button size="sm" variant="ghost" onClick={() => navigate("/history")} className="gap-2">
               <History className="h-4 w-4" />
               History
             </Button>
+            
+            {userProfile && (
+              <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                <Avatar className="h-8 w-8 border border-white/20">
+                  <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
+                  <AvatarFallback className="bg-white/10 text-white text-xs">
+                    {userProfile.full_name?.charAt(0) || userProfile.email?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium text-white leading-none">{userProfile.full_name}</p>
+                  <p className="text-xs text-white/60 mt-0.5">{userProfile.email}</p>
+                </div>
+              </div>
+            )}
+            
             <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
               <LogOut className="h-4 w-4" />
-              Sign Out
+              <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
         </div>
