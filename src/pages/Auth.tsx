@@ -55,16 +55,16 @@ const Auth = () => {
 
 
   return (
-    <div className="min-h-screen bg-black grid-pattern flex items-center justify-center px-6">
+    <div className="min-h-screen bg-black grid-pattern flex items-center justify-center px-4 sm:px-6 py-8 sm:py-0">
       <Card className="w-full max-w-md glass border-white/10">
-        <CardHeader className="text-center space-y-4 pb-8">
+        <CardHeader className="text-center space-y-3 sm:space-y-4 pb-6 sm:pb-8">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center">
-              <Brain className="w-8 h-8 text-white" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/10 flex items-center justify-center">
+              <Brain className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
             </div>
           </div>
           <div>
-            <CardTitle className="text-3xl font-bold text-white mb-2">GPTIQX</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl font-bold text-white mb-2">GPTIQX</CardTitle>
             <p className="text-white/60 text-sm">
               {isSignUp ? "Create your account" : "Sign in to continue"}
             </p>

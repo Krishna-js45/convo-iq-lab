@@ -253,42 +253,42 @@ const Dashboard = () => {
     <div className="min-h-screen bg-black grid-pattern">
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Brain className="w-6 h-6 text-white" />
-            <span className="text-xl font-bold text-white">GPTIQX</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
+            <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button size="sm" variant="ghost" onClick={() => navigate("/history")} className="gap-2">
-              <History className="h-4 w-4" />
-              History
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button size="sm" variant="ghost" onClick={() => navigate("/history")} className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">History</span>
             </Button>
             
             {userProfile && (
-              <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                <Avatar className="h-8 w-8 border border-white/20">
+              <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 border border-white/20 flex-shrink-0">
                   <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
                   <AvatarFallback className="bg-white/10 text-white text-xs">
                     {userProfile.full_name?.charAt(0) || userProfile.email?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-white leading-none">{userProfile.full_name}</p>
-                  <p className="text-xs text-white/60 mt-0.5">{userProfile.email}</p>
+                <div className="hidden sm:block min-w-0">
+                  <p className="text-sm font-medium text-white leading-none truncate">{userProfile.full_name}</p>
+                  <p className="text-xs text-white/60 mt-0.5 truncate">{userProfile.email}</p>
                 </div>
               </div>
             )}
             
-            <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
-              <LogOut className="h-4 w-4" />
+            <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
         </div>
       </nav>
 
-      <div className="pt-24 pb-12 px-6">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <div className="pt-24 pb-12 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
           {/* Main IQ Scores */}
           <div className="grid md:grid-cols-3 gap-6">
             <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in">
@@ -475,7 +475,7 @@ const Dashboard = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-white/80 leading-relaxed">{scores.justification}</p>
+                    <p className="text-white/80 leading-relaxed select-text">{scores.justification}</p>
                   </CardContent>
                 </Card>
               )}
@@ -862,14 +862,14 @@ const Dashboard = () => {
                       <Sparkles className="w-4 h-4 text-accent" />
                       Analysis Summary
                     </h4>
-                    <p className="text-white/80 text-sm leading-relaxed">{selectedConversation.justification}</p>
+                    <p className="text-white/80 text-sm leading-relaxed select-text">{selectedConversation.justification}</p>
                   </div>
                 )}
 
                 {/* Full Transcript */}
                 <div className="glass p-4 rounded-lg border border-white/10">
                   <h4 className="text-sm font-semibold text-white mb-2">Full Transcript</h4>
-                  <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">
+                  <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap select-text">
                     {selectedConversation.transcript}
                   </div>
                 </div>

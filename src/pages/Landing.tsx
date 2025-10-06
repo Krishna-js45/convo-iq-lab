@@ -9,40 +9,40 @@ const Landing = () => {
     <div className="min-h-screen bg-black grid-pattern">
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Brain className="w-6 h-6 text-white" />
-            <span className="text-xl font-bold text-white">GPTIQX</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
+            <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
           </div>
-          <Button size="sm" onClick={() => navigate("/auth")}>
+          <Button size="sm" onClick={() => navigate("/auth")} className="text-xs sm:text-sm">
             Sign In
           </Button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-8">
-            <Sparkles className="w-4 h-4 text-accent" />
-            <span className="text-sm text-white/80">AI Intelligence Measurement Platform</span>
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 bg-white/5 mb-6 sm:mb-8">
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent flex-shrink-0" />
+            <span className="text-xs sm:text-sm text-white/80">AI Intelligence Measurement Platform</span>
           </div>
           
-          <h1 className="text-6xl md:text-7xl font-bold text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 tracking-tight">
             Measure Your
             <br />
             <span className="text-accent">Conversation IQ</span>
           </h1>
           
-          <p className="text-xl text-white/60 mb-12 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-white/60 mb-8 sm:mb-12 max-w-2xl mx-auto">
             Advanced analytics for AI conversations. Get precise UserIQ, GPTIQ, and ConversationIQ scores.
           </p>
           
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Button 
               size="lg" 
               onClick={() => navigate("/auth")}
-              className="gap-2 glow-white"
+              className="gap-2 glow-white w-full sm:w-auto"
             >
               Start Analyzing
               <ArrowRight className="h-4 w-4" />
@@ -51,6 +51,7 @@ const Landing = () => {
               size="lg" 
               variant="outline"
               onClick={() => navigate("/dashboard")}
+              className="w-full sm:w-auto"
             >
               View Dashboard
             </Button>
@@ -59,34 +60,34 @@ const Landing = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="glass p-8 rounded-xl hover:bg-white/10 transition-all group">
-              <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-6 group-hover:bg-white/20 transition-colors">
-                <Brain className="w-6 h-6 text-white" />
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="glass p-6 sm:p-8 rounded-xl hover:bg-white/10 transition-all group">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4 sm:mb-6 group-hover:bg-white/20 transition-colors">
+                <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-3">UserIQ</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">UserIQ</h3>
               <p className="text-white/60 text-sm leading-relaxed">
                 Analyzes prompt clarity, reasoning depth, creative thinking, and engagement quality
               </p>
             </div>
 
-            <div className="glass p-8 rounded-xl hover:bg-white/10 transition-all group">
-              <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center mb-6 group-hover:bg-accent/30 transition-colors">
-                <Zap className="w-6 h-6 text-accent" />
+            <div className="glass p-6 sm:p-8 rounded-xl hover:bg-white/10 transition-all group">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-accent/20 flex items-center justify-center mb-4 sm:mb-6 group-hover:bg-accent/30 transition-colors">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-accent" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-3">GPTIQ</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">GPTIQ</h3>
               <p className="text-white/60 text-sm leading-relaxed">
                 Evaluates AI response accuracy, coherence, problem-solving ability, and creativity
               </p>
             </div>
 
-            <div className="glass p-8 rounded-xl hover:bg-white/10 transition-all group">
-              <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-6 group-hover:bg-white/20 transition-colors">
-                <BarChart3 className="w-6 h-6 text-white" />
+            <div className="glass p-6 sm:p-8 rounded-xl hover:bg-white/10 transition-all group">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4 sm:mb-6 group-hover:bg-white/20 transition-colors">
+                <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-3">ConversationIQ</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">ConversationIQ</h3>
               <p className="text-white/60 text-sm leading-relaxed">
                 Measures conversation flow, engagement balance, productivity, and synergy
               </p>
@@ -96,18 +97,18 @@ const Landing = () => {
       </section>
 
       {/* Subscription Plans */}
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
               Choose Your Plan
             </h2>
-            <p className="text-white/60 text-lg">
+            <p className="text-white/60 text-base sm:text-lg">
               Start free or unlock unlimited analyses with Pro
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
             {/* Free Tier */}
             <div className="glass p-8 rounded-2xl hover:bg-white/10 transition-all border border-white/10">
               <div className="mb-6">
@@ -215,15 +216,15 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center glass p-12 rounded-2xl">
-          <h2 className="text-4xl font-bold text-white mb-4">
+      <section className="py-12 sm:py-20 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto text-center glass p-8 sm:p-12 rounded-2xl">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
             Ready to get started?
           </h2>
-          <p className="text-white/60 text-lg mb-8">
+          <p className="text-white/60 text-base sm:text-lg mb-6 sm:mb-8">
             Join thousands of users measuring their conversation intelligence
           </p>
-          <Button size="lg" onClick={() => navigate("/auth")} className="glow-white">
+          <Button size="lg" onClick={() => navigate("/auth")} className="glow-white w-full sm:w-auto">
             Create Free Account
           </Button>
         </div>

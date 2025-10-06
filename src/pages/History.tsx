@@ -294,26 +294,26 @@ const History = () => {
     <div className="min-h-screen bg-black grid-pattern">
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate("/dashboard")}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 text-xs sm:text-sm flex-shrink-0"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back
+              <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Back</span>
             </Button>
-            <div className="flex items-center gap-2">
-              <Brain className="w-6 h-6 text-white" />
-              <span className="text-xl font-bold text-white">History</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
+              <span className="text-lg sm:text-xl font-bold text-white truncate">History</span>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="pt-24 pb-12 px-6">
+      <div className="pt-24 pb-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
             <div className="text-center text-white/60 py-12">Loading history...</div>
@@ -554,7 +554,7 @@ const History = () => {
                     <CardTitle className="text-sm text-white/80">Analysis Summary</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-white/70 leading-relaxed">{selectedConversation.justification}</p>
+                    <p className="text-white/70 leading-relaxed select-text">{selectedConversation.justification}</p>
                   </CardContent>
                 </Card>
               )}
@@ -565,7 +565,7 @@ const History = () => {
                   <CardTitle className="text-sm text-white/80">Full Transcript</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-white/70 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">
+                  <div className="text-white/70 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto select-text">
                     {selectedConversation.transcript}
                   </div>
                 </CardContent>
