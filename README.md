@@ -34,10 +34,11 @@ npm run dev
 
 This project is built with:
 
+
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
-
+<img width="1920" height="1080" alt="Screenshot (19)" src="https://github.com/user-attachments/assets/e4bce8b4-a947-4804-b97d-38fa6f82ae03" />
 
