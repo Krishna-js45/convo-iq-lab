@@ -68,6 +68,8 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+  <br>
+  <br>
 
 <img width="1625" height="603" alt="Screenshot (20)" src="https://github.com/user-attachments/assets/5380e6ac-a81f-4aac-9e23-24dcdbe3f1ed" />
 <br>
@@ -75,6 +77,10 @@ This project is built with:
 <br>
 <img width="1614" height="649" alt="Screenshot (19)" src="https://github.com/user-attachments/assets/570619c9-86c2-4402-9578-67b93490c8b7" />
 <br>
+<br>
+<br>
 <img width="1616" height="814" alt="Screenshot (18)" src="https://github.com/user-attachments/assets/0f19554e-062f-44f0-8225-cc3cb662d50f" />
+<br>
+<br>
 <br>
 <img width="1608" height="681" alt="Screenshot (17)" src="https://github.com/user-attachments/assets/879cbb1f-eb53-4a24-a5fd-9b4bbb469a93" />
