@@ -71,6 +71,8 @@ This project is built with:
 
 <img width="1625" height="603" alt="Screenshot (20)" src="https://github.com/user-attachments/assets/5380e6ac-a81f-4aac-9e23-24dcdbe3f1ed" />
 <br>
+<br>
+<br>
 <img width="1614" height="649" alt="Screenshot (19)" src="https://github.com/user-attachments/assets/570619c9-86c2-4402-9578-67b93490c8b7" />
 <br>
 <img width="1616" height="814" alt="Screenshot (18)" src="https://github.com/user-attachments/assets/0f19554e-062f-44f0-8225-cc3cb662d50f" />
