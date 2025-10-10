@@ -1,4 +1,32 @@
+<img width="311" height="319" alt="pppjpg" src="https://github.com/user-attachments/assets/74aa683f-fb4c-405c-b834-8b943e7eb655" />
 
+
+GPTIQX – AI Conversation IQ Analyzer
+
+GPTIQX is the world’s first platform designed to measure the intelligence quotient of AI conversations. It analyzes entire chat transcripts (or live conversations) and generates three key scores:
+
+UserIQ – Measures the quality and creativity of user prompts.
+
+GPTIQ – Evaluates the accuracy, coherence, and depth of AI responses.
+
+ConversationIQ – Assesses the overall synergy, flow, and engagement between user and AI.
+
+These scores are calculated using advanced AI evaluation engines and converted into a professional IQ scale, giving users actionable insights into how well their conversations perform.
+
+Features
+
+Upload chat transcripts or connect via API for real-time analysis.
+Dashboard with animated glass-morphism cards, trend graphs, and week-over-week growth tracking.
+History page storing past conversations with detailed breakdowns, exportable as PDF or CSV.
+Subscription tiers: Free (3 analyses/day) and Pro (unlimited + advanced analytics).
+Full Supabase integration for user authentication, session storage, and analytics.
+Clean, futuristic, and professional UI using React + Tailwind, fully responsive on desktop and mobile.
+
+Tech Stack
+Frontend: React + TailwindCSS + Recharts (charts & trends)
+Backend: FastAPI / Flask (AI scoring engine)
+Database & Auth: Supabase (PostgreSQL, email/password authentication)
+Deployment: Frontend → Vercel, Backend → Railway/Render
 
 Follow these steps:
 
