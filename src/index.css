@@ -40,6 +40,13 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Insight Colors - for intelligence cards */
+    --insight-positive: 142 76% 36%;
+    --insight-negative: 0 84% 60%;
+    --insight-neutral: 220 14% 50%;
+    --insight-info: 217 91% 60%;
+    --insight-warning: 38 92% 50%;
+
     /* Borders */
     --border: 0 0% 15%;
     --input: 0 0% 15%;

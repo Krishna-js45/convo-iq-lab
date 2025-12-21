@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History, TrendingDown, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History, TrendingDown, ArrowUpRight, ArrowDownRight, Lightbulb } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { MetricExplainer, InsightEngine } from "@/components/insights";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -379,6 +380,8 @@ const Dashboard = () => {
                         <p>How original and innovative are the prompts?</p>
                       </TooltipContent>
                     </Tooltip>
+
+                    <MetricExplainer metric="UserIQ" className="mt-4" />
                   </CardContent>
                 </Card>
 
@@ -426,6 +429,8 @@ const Dashboard = () => {
                         <p>How well does GPT maintain context and flow?</p>
                       </TooltipContent>
                     </Tooltip>
+
+                    <MetricExplainer metric="GPTIQ" className="mt-4" />
                   </CardContent>
                 </Card>
 
@@ -461,9 +466,30 @@ const Dashboard = () => {
                         <p>How well do user and GPT complement each other?</p>
                       </TooltipContent>
                     </Tooltip>
+
+                    <MetricExplainer metric="ConversationIQ" className="mt-4" />
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Insight Engine - Contextual Intelligence */}
+              <Card className="glass border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                    <Lightbulb className="w-5 h-5 text-[hsl(var(--insight-info))]" />
+                    Intelligence Insights
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <InsightEngine
+                    currentScores={scores}
+                    userTrend={userComparison}
+                    gptTrend={gptComparison}
+                    convTrend={convComparison}
+                    conversationCount={conversations.length}
+                  />
+                </CardContent>
+              </Card>
 
               {/* Justification */}
               {scores.justification && (
