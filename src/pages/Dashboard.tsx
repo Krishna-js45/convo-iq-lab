@@ -11,7 +11,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MetricExplainer, InsightEngine } from "@/components/insights";
+import { MetricExplainer, PrimaryInsight } from "@/components/insights";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -472,24 +472,12 @@ const Dashboard = () => {
                 </Card>
               </div>
 
-              {/* Insight Engine - Contextual Intelligence */}
-              <Card className="glass border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-[hsl(var(--insight-info))]" />
-                    Intelligence Insights
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InsightEngine
-                    currentScores={scores}
-                    userTrend={userComparison}
-                    gptTrend={gptComparison}
-                    convTrend={convComparison}
-                    conversationCount={conversations.length}
-                  />
-                </CardContent>
-              </Card>
+              {/* Primary Insight - What to improve next */}
+              <PrimaryInsight
+                currentScores={scores}
+                conversationCount={conversations.length}
+                isPro={false}
+              />
 
               {/* Justification */}
               {scores.justification && (
