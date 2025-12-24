@@ -1,22 +1,54 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Brain, ArrowRight, Sparkles, BarChart3, Zap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleStartAnalyzing = () => {
+    if (isLoggedIn) {
+      navigate("/dashboard");
+    } else {
+      navigate("/auth");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black grid-pattern">
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
+          <Link to="/" className="flex items-center gap-2 min-w-0">
             <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
             <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
-          </div>
-          <Button size="sm" onClick={() => navigate("/auth")} className="text-xs sm:text-sm">
-            Sign In
-          </Button>
+          </Link>
+          {isLoggedIn ? (
+            <Button size="sm" onClick={() => navigate("/dashboard")} className="text-xs sm:text-sm">
+              Dashboard
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => navigate("/auth")} className="text-xs sm:text-sm">
+              Sign In
+            </Button>
+          )}
         </div>
       </nav>
 
@@ -41,20 +73,22 @@ const Landing = () => {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Button 
               size="lg" 
-              onClick={() => navigate("/auth")}
+              onClick={handleStartAnalyzing}
               className="gap-2 glow-white w-full sm:w-auto"
             >
               Start Analyzing
               <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate("/dashboard")}
-              className="w-full sm:w-auto"
-            >
-              View Dashboard
-            </Button>
+            {isLoggedIn && (
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => navigate("/dashboard")}
+                className="w-full sm:w-auto"
+              >
+                View Dashboard
+              </Button>
+            )}
           </div>
         </div>
       </section>
