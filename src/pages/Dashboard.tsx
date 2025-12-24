@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History, TrendingDown, ArrowUpRight, ArrowDownRight, Lightbulb } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
+import FuturisticTrendsChart from "@/components/charts/FuturisticTrendsChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -255,10 +256,10 @@ const Dashboard = () => {
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
+          <Link to="/" className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-80 transition-opacity">
             <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
             <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Button size="sm" variant="ghost" onClick={() => navigate("/history")} className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
               <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -699,62 +700,8 @@ const Dashboard = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="min-w-0">
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="rgba(255,255,255,0.6)"
-                      style={{ fontSize: '12px' }}
-                    />
-                    <YAxis 
-                      stroke="rgba(255,255,255,0.6)"
-                      style={{ fontSize: '12px' }}
-                    />
-                    <RechartsTooltip 
-                      contentStyle={{ 
-                        backgroundColor: "rgba(0,0,0,0.95)", 
-                        border: "1px solid rgba(255,255,255,0.3)",
-                        borderRadius: "8px",
-                        padding: "12px"
-                      }}
-                      labelStyle={{ color: "rgba(255,255,255,0.8)", marginBottom: "8px" }}
-                      itemStyle={{ color: "rgba(255,255,255,1)" }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: "20px" }}
-                      iconType="line"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="UserIQ" 
-                      stroke="#3b82f6" 
-                      strokeWidth={3} 
-                      dot={{ r: 5, strokeWidth: 2, fill: "#3b82f6" }}
-                      activeDot={{ r: 7 }}
-                      name="User IQ"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="GPTIQ" 
-                      stroke="#10b981" 
-                      strokeWidth={3} 
-                      dot={{ r: 5, strokeWidth: 2, fill: "#10b981" }}
-                      activeDot={{ r: 7 }}
-                      name="GPT IQ"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="ConversationIQ" 
-                      stroke="#f59e0b" 
-                      strokeWidth={3} 
-                      dot={{ r: 5, strokeWidth: 2, fill: "#f59e0b" }}
-                      activeDot={{ r: 7 }}
-                      name="Conversation IQ"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <CardContent className="min-w-0 p-6">
+                <FuturisticTrendsChart data={chartData} />
               </CardContent>
             </Card>
           )}
