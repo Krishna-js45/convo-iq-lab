@@ -1,15 +1,20 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceDot } from "recharts";
 import { motion } from "framer-motion";
+import { Trophy, TrendingUp } from "lucide-react";
 
 interface ChartDataPoint {
   date: string;
   UserIQ: number | null;
   GPTIQ: number | null;
   ConversationIQ: number | null;
+  isBest?: boolean;
+  isImprovement?: boolean;
 }
 
 interface FuturisticTrendsChartProps {
   data: ChartDataPoint[];
+  bestSessionIndex?: number;
+  improvementIndex?: number;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -50,7 +55,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const CustomLegend = ({ payload }: any) => {
   return (
-    <div className="flex justify-center gap-6 pt-6">
+    <div className="flex flex-wrap justify-center gap-3 sm:gap-6 pt-6">
       {payload?.map((entry: any, index: number) => (
         <div 
           key={index} 
@@ -66,11 +71,23 @@ const CustomLegend = ({ payload }: any) => {
           <span className="text-white/80 text-xs font-medium">{entry.value}</span>
         </div>
       ))}
+      {/* Legend for markers */}
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30">
+        <Trophy className="w-3 h-3 text-amber-400" />
+        <span className="text-white/80 text-xs font-medium">Best Session</span>
+      </div>
     </div>
   );
 };
 
-const FuturisticTrendsChart = ({ data }: FuturisticTrendsChartProps) => {
+const FuturisticTrendsChart = ({ data, bestSessionIndex, improvementIndex }: FuturisticTrendsChartProps) => {
+  // Mark data points
+  const enhancedData = data.map((point, index) => ({
+    ...point,
+    isBest: index === bestSessionIndex,
+    isImprovement: index === improvementIndex,
+  }));
+
   return (
     <div className="relative w-full">
       {/* Ambient glow background */}
@@ -81,7 +98,7 @@ const FuturisticTrendsChart = ({ data }: FuturisticTrendsChartProps) => {
       </div>
 
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+        <LineChart data={enhancedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
           <defs>
             {/* Gradient for UserIQ line */}
             <linearGradient id="userIQGradient" x1="0" y1="0" x2="1" y2="0">

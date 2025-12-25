@@ -12,7 +12,7 @@ import FuturisticTrendsChart from "@/components/charts/FuturisticTrendsChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MetricExplainer, PrimaryInsight } from "@/components/insights";
+import { MetricExplainer, PrimaryInsight, IntelligenceStatus, ImprovementFocus, LearningTimeline } from "@/components/insights";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -166,12 +166,29 @@ const Dashboard = () => {
     }
   };
 
-  const chartData = conversations.map((conv) => ({
+  const chartData = conversations.map((conv, index) => ({
     date: new Date(conv.created_at).toLocaleDateString(),
     UserIQ: conv.user_iq,
     GPTIQ: conv.gpt_iq,
     ConversationIQ: conv.conversation_iq,
   }));
+
+  // Find best session index for chart marker
+  const findBestSessionIndex = () => {
+    if (conversations.length === 0) return undefined;
+    let bestIndex = 0;
+    let bestTotal = 0;
+    conversations.forEach((conv, index) => {
+      const total = (conv.user_iq || 0) + (conv.gpt_iq || 0) + (conv.conversation_iq || 0);
+      if (total > bestTotal) {
+        bestTotal = total;
+        bestIndex = index;
+      }
+    });
+    return bestIndex;
+  };
+
+  const bestSessionIndex = findBestSessionIndex();
 
   // Calculate averages
   const calculateAverage = (field: string) => {
@@ -333,6 +350,11 @@ const Dashboard = () => {
             </Card>
           </div>
 
+          {/* Intelligence Status Summary */}
+          {scores && (
+            <IntelligenceStatus scores={scores} />
+          )}
+
           {/* Score Breakdowns */}
           {scores && (
             <TooltipProvider>
@@ -480,6 +502,9 @@ const Dashboard = () => {
                 isPro={false}
               />
 
+              {/* Improvement Focus Mode */}
+              <ImprovementFocus scores={scores} />
+
               {/* Justification */}
               {scores.justification && (
                 <Card className="glass border-white/10">
@@ -617,50 +642,12 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Latest Conversations */}
-          {latestConversations.length > 0 && (
-            <Card className="glass border-white/10">
-              <CardHeader>
-                <CardTitle className="text-xl text-white flex items-center gap-2">
-                  <History className="w-5 h-5 text-white/60" />
-                  Latest Conversations
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {latestConversations.map((conv) => (
-                    <div
-                      key={conv.id}
-                      onClick={() => openConversationDetails(conv)}
-                      className="p-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent/50 transition-all cursor-pointer group"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-white font-medium truncate flex-1 pr-4 group-hover:text-accent transition-colors">
-                          {conv.title}
-                        </h3>
-                        <span className="text-xs text-white/40 whitespace-nowrap">
-                          {new Date(conv.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Brain className="w-3 h-3 text-white/40" />
-                          <span className="text-white/60">UserIQ: <span className="text-white font-bold">{conv.user_iq}</span></span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Zap className="w-3 h-3 text-accent" />
-                          <span className="text-white/60">GPTIQ: <span className="text-white font-bold">{conv.gpt_iq}</span></span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <BarChart3 className="w-3 h-3 text-white/40" />
-                          <span className="text-white/60">ConvIQ: <span className="text-white font-bold">{conv.conversation_iq}</span></span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Learning Timeline (replaces Latest Conversations) */}
+          {conversations.length > 0 && (
+            <LearningTimeline 
+              conversations={conversations} 
+              onConversationClick={openConversationDetails}
+            />
           )}
 
           {/* Trend Graphs */}
@@ -670,7 +657,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl text-white flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-accent" />
-                    IQ Trends Over Time
+                    Your Intelligence Progress
                   </CardTitle>
                   <div className="flex gap-2">
                     <Button
@@ -701,7 +688,7 @@ const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent className="min-w-0 p-6">
-                <FuturisticTrendsChart data={chartData} />
+                <FuturisticTrendsChart data={chartData} bestSessionIndex={bestSessionIndex} />
               </CardContent>
             </Card>
           )}
