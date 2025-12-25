@@ -651,51 +651,47 @@ const Dashboard = () => {
           )}
 
           {/* Trend Graphs */}
-          <Card className="glass border-white/10">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-accent" />
-                  Your Intelligence Progress
-                </CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    variant={dateFilter === "7d" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDateFilter("7d")}
-                    className="text-xs"
-                  >
-                    7 Days
-                  </Button>
-                  <Button
-                    variant={dateFilter === "30d" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDateFilter("30d")}
-                    className="text-xs"
-                  >
-                    30 Days
-                  </Button>
-                  <Button
-                    variant={dateFilter === "all" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDateFilter("all")}
-                    className="text-xs"
-                  >
-                    All Time
-                  </Button>
+          {conversations.length > 0 && (
+            <Card className="glass border-white/10">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl text-white flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-accent" />
+                    Your Intelligence Progress
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={dateFilter === "7d" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDateFilter("7d")}
+                      className="text-xs"
+                    >
+                      7 Days
+                    </Button>
+                    <Button
+                      variant={dateFilter === "30d" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDateFilter("30d")}
+                      className="text-xs"
+                    >
+                      30 Days
+                    </Button>
+                    <Button
+                      variant={dateFilter === "all" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setDateFilter("all")}
+                      className="text-xs"
+                    >
+                      All Time
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="min-w-0 p-6">
-              {conversations.length > 0 ? (
+              </CardHeader>
+              <CardContent className="min-w-0 p-6">
                 <FuturisticTrendsChart data={chartData} bestSessionIndex={bestSessionIndex} />
-              ) : (
-                <div className="h-[300px] flex items-center justify-center text-white/40">
-                  <p>No data yet. Analyze a conversation to see your progress.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Analysis Section */}
           <Card className="glass border-white/10">
