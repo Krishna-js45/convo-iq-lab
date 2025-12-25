@@ -21,7 +21,7 @@ const Dashboard = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [scores, setScores] = useState<any>(null);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("30d");
+  const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("all");
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [showConversationDialog, setShowConversationDialog] = useState(false);
   const [userProfile, setUserProfile] = useState<{ email: string; full_name: string; avatar_url: string } | null>(null);
