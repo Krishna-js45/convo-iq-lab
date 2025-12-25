@@ -1,4 +1,4 @@
-import { Lightbulb, TrendingUp, Lock, Sparkles } from "lucide-react";
+import { Lightbulb, TrendingUp, Lock, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ConversationData {
@@ -27,6 +27,7 @@ interface Insight {
   reason: string;
   action: string;
   category: "clarity" | "depth" | "creativity" | "synergy" | "flow" | "general";
+  confidence: "high" | "moderate" | "low";
 }
 
 const generatePrimaryInsight = (scores: ConversationData): Insight => {
@@ -40,6 +41,17 @@ const generatePrimaryInsight = (scores: ConversationData): Insight => {
   ];
 
   const weakest = factors.reduce((min, f) => f.value < min.value ? f : min, factors[0]);
+  
+  // Determine confidence based on score gap
+  const secondWeakest = factors
+    .filter(f => f.name !== weakest.name)
+    .reduce((min, f) => f.value < min.value ? f : min, factors[1]);
+  
+  const scoreGap = secondWeakest.value - weakest.value;
+  const confidence: "high" | "moderate" | "low" = 
+    scoreGap >= 15 ? "high" : 
+    scoreGap >= 5 ? "moderate" : 
+    "low";
 
   // Generate insight based on weakest factor
   const insights: Record<string, Insight> = {
@@ -47,31 +59,36 @@ const generatePrimaryInsight = (scores: ConversationData): Insight => {
       problem: "Your prompts could be clearer",
       reason: `Your clarity score is ${weakest.value}. The AI may struggle to understand exactly what you're asking for.`,
       action: "Start with your main question first, then add context. Be specific about what format you want the answer in.",
-      category: "clarity"
+      category: "clarity",
+      confidence
     },
     depth: {
       problem: "Your questions lack depth",
       reason: `Your depth score is ${weakest.value}. Simple questions often get surface-level answers.`,
       action: "Add 'why' or 'how' to your questions. Ask the AI to explain its reasoning or consider alternatives.",
-      category: "depth"
+      category: "depth",
+      confidence
     },
     creativity: {
       problem: "Your prompts are too predictable",
       reason: `Your creativity score is ${weakest.value}. Standard questions get standard answers.`,
       action: "Try asking from a different angle. Use 'what if' scenarios or ask the AI to challenge assumptions.",
-      category: "creativity"
+      category: "creativity",
+      confidence
     },
     synergy: {
       problem: "The conversation isn't building momentum",
       reason: `Your synergy score is ${weakest.value}. Each exchange feels disconnected from the previous one.`,
       action: "Reference what the AI said in your follow-ups. Build on previous answers instead of starting fresh.",
-      category: "synergy"
+      category: "synergy",
+      confidence
     },
     flow: {
       problem: "The conversation flow is choppy",
       reason: `Your flow score is ${weakest.value}. The dialogue doesn't progress naturally.`,
       action: "Guide the conversation step by step. After each response, ask a logical follow-up question.",
-      category: "flow"
+      category: "flow",
+      confidence
     }
   };
 
@@ -81,7 +98,8 @@ const generatePrimaryInsight = (scores: ConversationData): Insight => {
       problem: "You're doing great!",
       reason: `All your scores are above 80. Your conversation quality is excellent.`,
       action: "Keep experimenting with complex topics. Try multi-step reasoning or creative challenges to push further.",
-      category: "general"
+      category: "general",
+      confidence: "high"
     };
   }
 
@@ -127,7 +145,18 @@ export const PrimaryInsight = ({
           </div>
           <div className="flex-1 min-w-0 space-y-4">
             <div>
-              <p className="text-xs font-medium text-accent uppercase tracking-wide mb-1">Your Next Improvement</p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xs font-medium text-accent uppercase tracking-wide">Your Next Improvement</p>
+                <span className={cn(
+                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide",
+                  insight.confidence === "high" && "bg-[hsl(var(--insight-positive))]/20 text-[hsl(var(--insight-positive))]",
+                  insight.confidence === "moderate" && "bg-[hsl(var(--insight-info))]/20 text-[hsl(var(--insight-info))]",
+                  insight.confidence === "low" && "bg-white/10 text-white/60"
+                )}>
+                  <CheckCircle2 className="w-2.5 h-2.5" />
+                  {insight.confidence} confidence
+                </span>
+              </div>
               <h3 className="text-xl font-semibold text-white">{insight.problem}</h3>
             </div>
             
