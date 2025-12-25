@@ -284,7 +284,10 @@ const Dashboard = () => {
             </Button>
             
             {userProfile && (
-              <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+              <Link 
+                to="/profile" 
+                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+              >
                 <Avatar className="h-7 w-7 sm:h-8 sm:w-8 border border-white/20 flex-shrink-0">
                   <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
                   <AvatarFallback className="bg-white/10 text-white text-xs">
@@ -295,7 +298,7 @@ const Dashboard = () => {
                   <p className="text-sm font-medium text-white leading-none truncate">{userProfile.full_name}</p>
                   <p className="text-xs text-white/60 mt-0.5 truncate">{userProfile.email}</p>
                 </div>
-              </div>
+              </Link>
             )}
             
             <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
