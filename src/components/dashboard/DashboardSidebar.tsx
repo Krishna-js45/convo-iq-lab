@@ -41,7 +41,7 @@ interface DashboardSidebarProps {
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard", locked: false },
   { label: "Learning Timeline", icon: Clock, path: "/history", locked: false },
-  { label: "Your Intelligence Progress", icon: TrendingUp, path: null, locked: true },
+  { label: "Your Intelligence Progress", icon: TrendingUp, path: "/intelligence-progress", locked: true },
   { label: "Improvement Roadmaps", icon: Map, path: null, locked: true },
   { label: "Profile", icon: User, path: "/profile", locked: false },
   { label: "Settings", icon: Settings, path: "/profile", locked: false },

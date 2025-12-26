@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
+import IntelligenceProgress from "./pages/IntelligenceProgress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,7 +25,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/intelligence-progress" element={<IntelligenceProgress />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

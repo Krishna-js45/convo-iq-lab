@@ -5,25 +5,41 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History, TrendingDown, ArrowUpRight, ArrowDownRight, Lightbulb, Menu } from "lucide-react";
+import { Brain, Zap, BarChart3, LogOut, Sparkles, Menu } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
-import FuturisticTrendsChart from "@/components/charts/FuturisticTrendsChart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MetricExplainer, PrimaryInsight, IntelligenceStatus, ImprovementFocus, LearningTimeline } from "@/components/insights";
+import { MetricExplainer, PrimaryInsight, IntelligenceStatus, ImprovementFocus } from "@/components/insights";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+
+interface Conversation {
+  id: string;
+  title: string;
+  transcript: string;
+  created_at: string;
+  user_iq: number;
+  gpt_iq: number;
+  conversation_iq: number;
+  user_clarity?: number;
+  user_depth?: number;
+  user_creativity?: number;
+  gpt_clarity?: number;
+  gpt_depth?: number;
+  gpt_flow?: number;
+  conversation_flow?: number;
+  conversation_synergy?: number;
+  justification?: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [transcript, setTranscript] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [scores, setScores] = useState<any>(null);
-  const [conversations, setConversations] = useState<any[]>([]);
-  const [dateFilter, setDateFilter] = useState<"7d" | "30d" | "all">("all");
-  const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const [scores, setScores] = useState<Conversation | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showConversationDialog, setShowConversationDialog] = useState(false);
   const [userProfile, setUserProfile] = useState<{ email: string; full_name: string; avatar_url: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -31,11 +47,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     checkAuth();
-  }, []);
-
-  useEffect(() => {
     fetchConversations();
-  }, [dateFilter]);
+  }, []);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -59,23 +72,12 @@ const Dashboard = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    let query = supabase
+    const { data, error } = await supabase
       .from("conversations")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
 
-    if (dateFilter === "7d") {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      query = query.gte("created_at", sevenDaysAgo.toISOString());
-    } else if (dateFilter === "30d") {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      query = query.gte("created_at", thirtyDaysAgo.toISOString());
-    }
-
-    const { data, error } = await query;
     if (!error && data) {
       setConversations(data);
       if (data.length > 0) {
@@ -114,7 +116,6 @@ const Dashboard = () => {
         return;
       }
 
-      // Call the AI analysis edge function
       const { data: analysisData, error: functionError } = await supabase.functions.invoke(
         "analyze-conversation",
         { body: { transcript } }
@@ -122,12 +123,10 @@ const Dashboard = () => {
 
       if (functionError) throw functionError;
 
-      // Generate title from first 6-8 words of transcript
       const words = transcript.trim().split(/\s+/);
       const titleWords = words.slice(0, Math.min(8, words.length));
       const generatedTitle = titleWords.join(" ") + (words.length > 8 ? "..." : "");
 
-      // Insert the analyzed conversation into the database
       const { error: insertError } = await supabase.from("conversations").insert({
         user_id: user.id,
         title: generatedTitle,
@@ -169,104 +168,7 @@ const Dashboard = () => {
     }
   };
 
-  const chartData = conversations.map((conv, index) => ({
-    date: new Date(conv.created_at).toLocaleDateString(),
-    UserIQ: conv.user_iq,
-    GPTIQ: conv.gpt_iq,
-    ConversationIQ: conv.conversation_iq,
-  }));
-
-  // Find best session index for chart marker
-  const findBestSessionIndex = () => {
-    if (conversations.length === 0) return undefined;
-    let bestIndex = 0;
-    let bestTotal = 0;
-    conversations.forEach((conv, index) => {
-      const total = (conv.user_iq || 0) + (conv.gpt_iq || 0) + (conv.conversation_iq || 0);
-      if (total > bestTotal) {
-        bestTotal = total;
-        bestIndex = index;
-      }
-    });
-    return bestIndex;
-  };
-
-  const bestSessionIndex = findBestSessionIndex();
-
-  // Calculate averages
-  const calculateAverage = (field: string) => {
-    if (conversations.length === 0) return 0;
-    const sum = conversations.reduce((acc, conv) => acc + (conv[field] || 0), 0);
-    return Math.round(sum / conversations.length);
-  };
-
-  // Calculate week-over-week comparison
-  const calculateWeekComparison = (field: string) => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-
-    const currentWeek = conversations
-      .filter(c => new Date(c.created_at) >= oneWeekAgo)
-      .map(c => c[field])
-      .filter((val): val is number => val !== null && val !== undefined);
-    
-    const previousWeek = conversations
-      .filter(c => {
-        const date = new Date(c.created_at);
-        return date >= twoWeeksAgo && date < oneWeekAgo;
-      })
-      .map(c => c[field])
-      .filter((val): val is number => val !== null && val !== undefined);
-
-    const currentAvg = currentWeek.length > 0 
-      ? currentWeek.reduce((sum, val) => sum + val, 0) / currentWeek.length 
-      : 0;
-    const previousAvg = previousWeek.length > 0 
-      ? previousWeek.reduce((sum, val) => sum + val, 0) / previousWeek.length 
-      : 0;
-
-    return {
-      current: Math.round(currentAvg),
-      previous: Math.round(previousAvg),
-      diff: Math.round(currentAvg - previousAvg),
-      hasPrevious: previousWeek.length > 0
-    };
-  };
-
-  const avgUserIQ = calculateAverage("user_iq");
-  const avgGPTIQ = calculateAverage("gpt_iq");
-  const avgConversationIQ = calculateAverage("conversation_iq");
-  
-  const userComparison = calculateWeekComparison("user_iq");
-  const gptComparison = calculateWeekComparison("gpt_iq");
-  const convComparison = calculateWeekComparison("conversation_iq");
-
-  // Find highest and lowest scoring conversations
-  const getHighestLowest = () => {
-    if (conversations.length === 0) return { highest: null, lowest: null };
-    
-    let highest = conversations[0];
-    let lowest = conversations[0];
-
-    conversations.forEach(conv => {
-      const convTotal = (conv.user_iq || 0) + (conv.gpt_iq || 0) + (conv.conversation_iq || 0);
-      const highestTotal = (highest.user_iq || 0) + (highest.gpt_iq || 0) + (highest.conversation_iq || 0);
-      const lowestTotal = (lowest.user_iq || 0) + (lowest.gpt_iq || 0) + (lowest.conversation_iq || 0);
-
-      if (convTotal > highestTotal) highest = conv;
-      if (convTotal < lowestTotal) lowest = conv;
-    });
-
-    return { highest, lowest };
-  };
-
-  const { highest, lowest } = getHighestLowest();
-
-  // Get latest 3 conversations
-  const latestConversations = [...conversations].reverse().slice(0, 3);
-
-  const openConversationDetails = (conversation: any) => {
+  const openConversationDetails = (conversation: Conversation) => {
     setSelectedConversation(conversation);
     setShowConversationDialog(true);
   };
@@ -341,415 +243,245 @@ const Dashboard = () => {
           <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
             {/* Main IQ Scores */}
             <div className="grid md:grid-cols-3 gap-6">
-            <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/60">UserIQ</CardTitle>
-                <Brain className="w-4 h-4 text-white/40" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold text-white mb-1">
-                  {scores?.user_iq || "--"}
-                </div>
-                <p className="text-xs text-white/40">Prompt quality score</p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/60">GPTIQ</CardTitle>
-                <Zap className="w-4 h-4 text-accent" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold text-white mb-1">
-                  {scores?.gpt_iq || "--"}
-                </div>
-                <p className="text-xs text-white/40">AI response quality</p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-white/60">ConversationIQ</CardTitle>
-                <BarChart3 className="w-4 h-4 text-white/40" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold text-white mb-1">
-                  {scores?.conversation_iq || "--"}
-                </div>
-                <p className="text-xs text-white/40">Overall synergy</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Intelligence Status Summary */}
-          {scores && (
-            <IntelligenceStatus scores={scores} />
-          )}
-
-          {/* Score Breakdowns */}
-          {scores && (
-            <TooltipProvider>
-              <div className="grid md:grid-cols-3 gap-6">
-                {/* UserIQ Breakdown */}
-                <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-white flex items-center gap-2">
-                      <Brain className="w-5 h-5 text-white/60" />
-                      UserIQ Breakdown
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Clarity</span>
-                          <span className="font-bold text-white">{scores.user_clarity || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How clear and well-structured are the prompts?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Depth</span>
-                          <span className="font-bold text-white">{scores.user_depth || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How thoughtful and detailed are the questions?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Creativity</span>
-                          <span className="font-bold text-white">{scores.user_creativity || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How original and innovative are the prompts?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <MetricExplainer metric="UserIQ" className="mt-4" />
-                  </CardContent>
-                </Card>
-
-                {/* GPTIQ Breakdown */}
-                <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-white flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-accent" />
-                      GPTIQ Breakdown
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Clarity</span>
-                          <span className="font-bold text-white">{scores.gpt_clarity || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How clear and understandable are the responses?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Depth</span>
-                          <span className="font-bold text-white">{scores.gpt_depth || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How comprehensive and detailed are the answers?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Flow</span>
-                          <span className="font-bold text-white">{scores.gpt_flow || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How well does GPT maintain context and flow?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <MetricExplainer metric="GPTIQ" className="mt-4" />
-                  </CardContent>
-                </Card>
-
-                {/* ConversationIQ Breakdown */}
-                <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-white flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 text-white/60" />
-                      ConversationIQ Breakdown
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Flow</span>
-                          <span className="font-bold text-white">{scores.conversation_flow || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How natural is the conversation progression?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
-                          <span className="text-white/80">Synergy</span>
-                          <span className="font-bold text-white">{scores.conversation_synergy || "--"}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>How well do user and GPT complement each other?</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <MetricExplainer metric="ConversationIQ" className="mt-4" />
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Primary Insight - What to improve next */}
-              <PrimaryInsight
-                currentScores={scores}
-                conversationCount={conversations.length}
-                isPro={false}
-              />
-
-              {/* Improvement Focus Mode */}
-              <ImprovementFocus scores={scores} />
-
-              {/* Justification */}
-              {scores.justification && (
-                <Card className="glass border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-white flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-accent" />
-                      Analysis Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-white/80 leading-relaxed select-text">{scores.justification}</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TooltipProvider>
-          )}
-
-          {/* Analytics & Averages */}
-          {conversations.length > 0 && (
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300 animate-fade-in">
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium text-white/60">Average UserIQ</CardTitle>
+              <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-white/60">UserIQ</CardTitle>
+                  <Brain className="w-4 h-4 text-white/40" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white mb-2">{avgUserIQ}</div>
-                  {userComparison.hasPrevious && (
-                    <div className={`flex items-center gap-1 text-sm ${userComparison.diff > 0 ? 'text-green-400' : userComparison.diff < 0 ? 'text-red-400' : 'text-white/60'}`}>
-                      {userComparison.diff > 0 ? (
-                        <><TrendingUp className="h-4 w-4" /> +{userComparison.diff}</>
-                      ) : userComparison.diff < 0 ? (
-                        <><TrendingDown className="h-4 w-4" /> {userComparison.diff}</>
-                      ) : (
-                        <span>No change</span>
-                      )}
-                      <span className="text-white/40 ml-1">vs last week</span>
-                    </div>
-                  )}
-                  {!userComparison.hasPrevious && (
-                    <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
-                  )}
+                  <div className="text-4xl font-bold text-white mb-1">
+                    {scores?.user_iq || "--"}
+                  </div>
+                  <p className="text-xs text-white/40">Prompt quality score</p>
                 </CardContent>
               </Card>
 
-              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium text-white/60">Average GPTIQ</CardTitle>
+              <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-white/60">GPTIQ</CardTitle>
+                  <Zap className="w-4 h-4 text-accent" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white mb-2">{avgGPTIQ}</div>
-                  {gptComparison.hasPrevious && (
-                    <div className={`flex items-center gap-1 text-sm ${gptComparison.diff > 0 ? 'text-green-400' : gptComparison.diff < 0 ? 'text-red-400' : 'text-white/60'}`}>
-                      {gptComparison.diff > 0 ? (
-                        <><TrendingUp className="h-4 w-4" /> +{gptComparison.diff}</>
-                      ) : gptComparison.diff < 0 ? (
-                        <><TrendingDown className="h-4 w-4" /> {gptComparison.diff}</>
-                      ) : (
-                        <span>No change</span>
-                      )}
-                      <span className="text-white/40 ml-1">vs last week</span>
-                    </div>
-                  )}
-                  {!gptComparison.hasPrevious && (
-                    <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
-                  )}
+                  <div className="text-4xl font-bold text-white mb-1">
+                    {scores?.gpt_iq || "--"}
+                  </div>
+                  <p className="text-xs text-white/40">AI response quality</p>
                 </CardContent>
               </Card>
 
-              <Card className="glass border-white/10 hover:border-accent/30 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium text-white/60">Average ConversationIQ</CardTitle>
+              <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-white/60">ConversationIQ</CardTitle>
+                  <BarChart3 className="w-4 h-4 text-white/40" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-white mb-2">{avgConversationIQ}</div>
-                  {convComparison.hasPrevious && (
-                    <div className={`flex items-center gap-1 text-sm ${convComparison.diff > 0 ? 'text-green-400' : convComparison.diff < 0 ? 'text-red-400' : 'text-white/60'}`}>
-                      {convComparison.diff > 0 ? (
-                        <><TrendingUp className="h-4 w-4" /> +{convComparison.diff}</>
-                      ) : convComparison.diff < 0 ? (
-                        <><TrendingDown className="h-4 w-4" /> {convComparison.diff}</>
-                      ) : (
-                        <span>No change</span>
-                      )}
-                      <span className="text-white/40 ml-1">vs last week</span>
-                    </div>
-                  )}
-                  {!convComparison.hasPrevious && (
-                    <p className="text-xs text-white/40 mt-1">Across {conversations.length} conversations</p>
-                  )}
+                  <div className="text-4xl font-bold text-white mb-1">
+                    {scores?.conversation_iq || "--"}
+                  </div>
+                  <p className="text-xs text-white/40">Overall synergy</p>
                 </CardContent>
               </Card>
             </div>
-          )}
 
-          {/* Highlights */}
-          {conversations.length > 0 && highest && lowest && (
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="glass border-white/10 hover:border-green-500/30 transition-all duration-300 cursor-pointer group" onClick={() => openConversationDetails(highest)}>
-                <CardHeader>
-                  <CardTitle className="text-lg text-white flex items-center gap-2">
-                    <ArrowUpRight className="w-5 h-5 text-green-500" />
-                    Highest Scoring Conversation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="text-white/80 font-medium truncate">{highest.title}</p>
-                  <div className="flex gap-4 text-sm">
-                    <span className="text-white/60">UserIQ: <span className="text-white font-bold">{highest.user_iq}</span></span>
-                    <span className="text-white/60">GPTIQ: <span className="text-white font-bold">{highest.gpt_iq}</span></span>
-                    <span className="text-white/60">ConvIQ: <span className="text-white font-bold">{highest.conversation_iq}</span></span>
-                  </div>
-                  <p className="text-xs text-white/40 mt-2">{new Date(highest.created_at).toLocaleDateString()}</p>
-                  <p className="text-xs text-accent mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Click to view details →</p>
-                </CardContent>
-              </Card>
+            {/* Intelligence Status Summary */}
+            {scores && (
+              <IntelligenceStatus scores={scores} />
+            )}
 
-              <Card className="glass border-white/10 hover:border-red-500/30 transition-all duration-300 cursor-pointer group" onClick={() => openConversationDetails(lowest)}>
+            {/* Score Breakdowns */}
+            {scores && (
+              <TooltipProvider>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {/* UserIQ Breakdown */}
+                  <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-white flex items-center gap-2">
+                        <Brain className="w-5 h-5 text-white/60" />
+                        UserIQ Breakdown
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Clarity</span>
+                            <span className="font-bold text-white">{scores.user_clarity || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How clear and well-structured are the prompts?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Depth</span>
+                            <span className="font-bold text-white">{scores.user_depth || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How thoughtful and detailed are the questions?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Creativity</span>
+                            <span className="font-bold text-white">{scores.user_creativity || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How original and innovative are the prompts?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <MetricExplainer metric="UserIQ" className="mt-4" />
+                    </CardContent>
+                  </Card>
+
+                  {/* GPTIQ Breakdown */}
+                  <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-white flex items-center gap-2">
+                        <Zap className="w-5 h-5 text-accent" />
+                        GPTIQ Breakdown
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Clarity</span>
+                            <span className="font-bold text-white">{scores.gpt_clarity || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How clear and understandable are the responses?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Depth</span>
+                            <span className="font-bold text-white">{scores.gpt_depth || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How comprehensive and detailed are the answers?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Flow</span>
+                            <span className="font-bold text-white">{scores.gpt_flow || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How well does GPT maintain context and flow?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <MetricExplainer metric="GPTIQ" className="mt-4" />
+                    </CardContent>
+                  </Card>
+
+                  {/* ConversationIQ Breakdown */}
+                  <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-white flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-white/60" />
+                        ConversationIQ Breakdown
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Flow</span>
+                            <span className="font-bold text-white">{scores.conversation_flow || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How natural is the conversation progression?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-help">
+                            <span className="text-white/80">Synergy</span>
+                            <span className="font-bold text-white">{scores.conversation_synergy || "--"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>How well do user and GPT complement each other?</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <MetricExplainer metric="ConversationIQ" className="mt-4" />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Primary Insight - What to improve next */}
+                <PrimaryInsight
+                  currentScores={scores}
+                  conversationCount={conversations.length}
+                  isPro={false}
+                />
+
+                {/* Improvement Focus Mode */}
+                <ImprovementFocus scores={scores} />
+
+                {/* Justification */}
+                {scores.justification && (
+                  <Card className="glass border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-white flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-accent" />
+                        Analysis Summary
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-white/80 leading-relaxed select-text">{scores.justification}</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TooltipProvider>
+            )}
+
+            {/* Analysis Section */}
+            <div ref={analysisRef}>
+              <Card className="glass border-white/10">
                 <CardHeader>
-                  <CardTitle className="text-lg text-white flex items-center gap-2">
-                    <ArrowDownRight className="w-5 h-5 text-red-500" />
-                    Lowest Scoring Conversation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="text-white/80 font-medium truncate">{lowest.title}</p>
-                  <div className="flex gap-4 text-sm">
-                    <span className="text-white/60">UserIQ: <span className="text-white font-bold">{lowest.user_iq}</span></span>
-                    <span className="text-white/60">GPTIQ: <span className="text-white font-bold">{lowest.gpt_iq}</span></span>
-                    <span className="text-white/60">ConvIQ: <span className="text-white font-bold">{lowest.conversation_iq}</span></span>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-accent" />
+                    <CardTitle className="text-xl text-white">Analyze Conversation</CardTitle>
                   </div>
-                  <p className="text-xs text-white/40 mt-2">{new Date(lowest.created_at).toLocaleDateString()}</p>
-                  <p className="text-xs text-accent mt-2 opacity-0 group-hover:opacity-100 transition-opacity">Click to view details →</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Textarea
+                    placeholder="Paste your conversation transcript here..."
+                    value={transcript}
+                    onChange={(e) => setTranscript(e.target.value)}
+                    className="min-h-[300px] resize-none bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20"
+                  />
+                  <Button 
+                    onClick={handleAnalyze} 
+                    disabled={isAnalyzing}
+                    className="w-full glow-white"
+                    size="lg"
+                  >
+                    {isAnalyzing ? "Analyzing..." : "Analyze Conversation"}
+                  </Button>
                 </CardContent>
               </Card>
             </div>
-          )}
-
-          {/* Learning Timeline (replaces Latest Conversations) */}
-          {conversations.length > 0 && (
-            <LearningTimeline 
-              conversations={conversations} 
-              onConversationClick={openConversationDetails}
-            />
-          )}
-
-          {/* Trend Graphs */}
-          {conversations.length > 0 && (
-            <Card className="glass border-white/10">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl text-white flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-accent" />
-                    Your Intelligence Progress
-                  </CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={dateFilter === "7d" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setDateFilter("7d")}
-                      className="text-xs"
-                    >
-                      7 Days
-                    </Button>
-                    <Button
-                      variant={dateFilter === "30d" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setDateFilter("30d")}
-                      className="text-xs"
-                    >
-                      30 Days
-                    </Button>
-                    <Button
-                      variant={dateFilter === "all" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setDateFilter("all")}
-                      className="text-xs"
-                    >
-                      All Time
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="min-w-0 p-6">
-                <FuturisticTrendsChart data={chartData} bestSessionIndex={bestSessionIndex} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Analysis Section */}
-          <div ref={analysisRef}>
-          <Card className="glass border-white/10">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-accent" />
-                <CardTitle className="text-xl text-white">Analyze Conversation</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="Paste your conversation transcript here..."
-                value={transcript}
-                onChange={(e) => setTranscript(e.target.value)}
-                className="min-h-[300px] resize-none bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20"
-              />
-              <Button 
-                onClick={handleAnalyze} 
-                disabled={isAnalyzing}
-                className="w-full glow-white"
-                size="lg"
-              >
-                {isAnalyzing ? "Analyzing..." : "Analyze Conversation"}
-              </Button>
-            </CardContent>
-          </Card>
           </div>
         </div>
       </div>
@@ -785,81 +517,99 @@ const Dashboard = () => {
 
                 {/* Score Breakdowns */}
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="glass p-4 rounded-lg border border-white/10">
-                    <h4 className="text-sm font-semibold text-white mb-3">UserIQ Breakdown</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Clarity</span>
-                        <span className="text-white font-bold">{selectedConversation.user_clarity}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Depth</span>
-                        <span className="text-white font-bold">{selectedConversation.user_depth}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Creativity</span>
-                        <span className="text-white font-bold">{selectedConversation.user_creativity}</span>
-                      </div>
-                    </div>
-                  </div>
+                  {selectedConversation.user_clarity && (
+                    <Card className="glass border-white/10">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm text-white/60">UserIQ Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Clarity</span>
+                          <span className="text-white">{selectedConversation.user_clarity}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Depth</span>
+                          <span className="text-white">{selectedConversation.user_depth}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Creativity</span>
+                          <span className="text-white">{selectedConversation.user_creativity}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-                  <div className="glass p-4 rounded-lg border border-white/10">
-                    <h4 className="text-sm font-semibold text-white mb-3">GPTIQ Breakdown</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Clarity</span>
-                        <span className="text-white font-bold">{selectedConversation.gpt_clarity}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Depth</span>
-                        <span className="text-white font-bold">{selectedConversation.gpt_depth}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Flow</span>
-                        <span className="text-white font-bold">{selectedConversation.gpt_flow}</span>
-                      </div>
-                    </div>
-                  </div>
+                  {selectedConversation.gpt_clarity && (
+                    <Card className="glass border-white/10">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm text-white/60">GPTIQ Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Clarity</span>
+                          <span className="text-white">{selectedConversation.gpt_clarity}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Depth</span>
+                          <span className="text-white">{selectedConversation.gpt_depth}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Flow</span>
+                          <span className="text-white">{selectedConversation.gpt_flow}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-                  <div className="glass p-4 rounded-lg border border-white/10">
-                    <h4 className="text-sm font-semibold text-white mb-3">ConversationIQ Breakdown</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Flow</span>
-                        <span className="text-white font-bold">{selectedConversation.conversation_flow}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/60">Synergy</span>
-                        <span className="text-white font-bold">{selectedConversation.conversation_synergy}</span>
-                      </div>
-                    </div>
-                  </div>
+                  {selectedConversation.conversation_flow && (
+                    <Card className="glass border-white/10">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm text-white/60">ConversationIQ Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Flow</span>
+                          <span className="text-white">{selectedConversation.conversation_flow}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/60">Synergy</span>
+                          <span className="text-white">{selectedConversation.conversation_synergy}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
 
                 {/* Justification */}
                 {selectedConversation.justification && (
-                  <div className="glass p-4 rounded-lg border border-white/10">
-                    <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-accent" />
-                      Analysis Summary
-                    </h4>
-                    <p className="text-white/80 text-sm leading-relaxed select-text">{selectedConversation.justification}</p>
-                  </div>
+                  <Card className="glass border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-white">Analysis Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-white/80 leading-relaxed select-text">
+                        {selectedConversation.justification}
+                      </p>
+                    </CardContent>
+                  </Card>
                 )}
 
-                {/* Full Transcript */}
-                <div className="glass p-4 rounded-lg border border-white/10">
-                  <h4 className="text-sm font-semibold text-white mb-2">Full Transcript</h4>
-                  <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap select-text">
-                    {selectedConversation.transcript}
-                  </div>
-                </div>
+                {/* Transcript */}
+                <Card className="glass border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white">Full Transcript</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white/70 whitespace-pre-wrap text-sm leading-relaxed select-text">
+                      {selectedConversation.transcript}
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
             </ScrollArea>
           )}
         </DialogContent>
       </Dialog>
-      </div>
     </div>
   );
 };
