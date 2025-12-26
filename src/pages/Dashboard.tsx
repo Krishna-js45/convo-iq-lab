@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History, TrendingDown, ArrowUpRight, ArrowDownRight, Lightbulb } from "lucide-react";
+import { Brain, Zap, BarChart3, LogOut, Sparkles, TrendingUp, Calendar, History, TrendingDown, ArrowUpRight, ArrowDownRight, Lightbulb, Menu } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from "recharts";
 import FuturisticTrendsChart from "@/components/charts/FuturisticTrendsChart";
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MetricExplainer, PrimaryInsight, IntelligenceStatus, ImprovementFocus, LearningTimeline } from "@/components/insights";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ const Dashboard = () => {
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [showConversationDialog, setShowConversationDialog] = useState(false);
   const [userProfile, setUserProfile] = useState<{ email: string; full_name: string; avatar_url: string } | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const analysisRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkAuth();
@@ -268,51 +271,76 @@ const Dashboard = () => {
     setShowConversationDialog(true);
   };
 
+  const scrollToAnalysis = () => {
+    analysisRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-black grid-pattern">
-      {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-80 transition-opacity">
-            <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
-            <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Button size="sm" variant="ghost" onClick={() => navigate("/history")} className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
-              <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">History</span>
-            </Button>
-            
-            {userProfile && (
-              <Link 
-                to="/profile" 
-                className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
-              >
-                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 border border-white/20 flex-shrink-0">
-                  <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
-                  <AvatarFallback className="bg-white/10 text-white text-xs">
-                    {userProfile.full_name?.charAt(0) || userProfile.email?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden sm:block min-w-0">
-                  <p className="text-sm font-medium text-white leading-none truncate">{userProfile.full_name}</p>
-                  <p className="text-xs text-white/60 mt-0.5 truncate">{userProfile.email}</p>
-                </div>
-              </Link>
-            )}
-            
-            <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
-              <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      {/* ChatGPT-style Sidebar */}
+      <DashboardSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        conversations={conversations}
+        onNewAnalysis={scrollToAnalysis}
+        onSelectConversation={openConversationDetails}
+      />
 
-      <div className="pt-24 pb-12 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
-          {/* Main IQ Scores */}
-          <div className="grid md:grid-cols-3 gap-6">
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-72' : ''}`}>
+        {/* Header */}
+        <nav className="fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+          <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-72' : ''}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {!sidebarOpen && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSidebarOpen(true)}
+                    className="p-2"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                )}
+                <Link to="/" className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-80 transition-opacity">
+                  <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
+                  <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
+                </Link>
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                {userProfile && (
+                  <Link 
+                    to="/profile" 
+                    className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+                  >
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8 border border-white/20 flex-shrink-0">
+                      <AvatarImage src={userProfile.avatar_url} alt={userProfile.full_name} />
+                      <AvatarFallback className="bg-white/10 text-white text-xs">
+                        {userProfile.full_name?.charAt(0) || userProfile.email?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden sm:block min-w-0">
+                      <p className="text-sm font-medium text-white leading-none truncate">{userProfile.full_name}</p>
+                      <p className="text-xs text-white/60 mt-0.5 truncate">{userProfile.email}</p>
+                    </div>
+                  </Link>
+                )}
+                
+                <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                  <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <div className="pt-24 pb-12 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+            {/* Main IQ Scores */}
+            <div className="grid md:grid-cols-3 gap-6">
             <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-white/60">UserIQ</CardTitle>
@@ -697,6 +725,7 @@ const Dashboard = () => {
           )}
 
           {/* Analysis Section */}
+          <div ref={analysisRef}>
           <Card className="glass border-white/10">
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -721,6 +750,7 @@ const Dashboard = () => {
               </Button>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
 
@@ -829,6 +859,7 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };
