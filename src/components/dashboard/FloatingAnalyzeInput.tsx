@@ -68,15 +68,11 @@ const FloatingAnalyzeInput = ({
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300",
+        "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-4",
         sidebarOpen ? "lg:left-72" : ""
       )}
     >
-      {/* Gradient fade effect */}
-      <div className="absolute inset-x-0 -top-12 h-12 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
-      
-      <div className="bg-transparent backdrop-blur-md border-t border-white/5 px-4 py-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto">
           {/* Image previews */}
           {imagePreviews.length > 0 && (
             <div className="flex gap-2 mb-3 flex-wrap">
@@ -176,7 +172,6 @@ const FloatingAnalyzeInput = ({
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
