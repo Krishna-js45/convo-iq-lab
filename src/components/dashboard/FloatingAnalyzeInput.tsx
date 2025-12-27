@@ -73,9 +73,9 @@ const FloatingAnalyzeInput = ({
       )}
     >
       {/* Gradient fade effect */}
-      <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 -top-12 h-12 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
       
-      <div className="bg-black/90 backdrop-blur-xl border-t border-white/10 px-4 py-4">
+      <div className="bg-transparent backdrop-blur-md border-t border-white/5 px-4 py-4">
         <div className="max-w-4xl mx-auto">
           {/* Image previews */}
           {imagePreviews.length > 0 && (
@@ -118,14 +118,15 @@ const FloatingAnalyzeInput = ({
               variant="ghost"
               size="icon"
               onClick={() => fileInputRef.current?.click()}
-              className="flex-shrink-0 h-10 w-10 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              className="flex-shrink-0 h-10 w-10 rounded-full text-white/40 hover:text-white/80 hover:bg-white/5 transition-all duration-300 border border-white/10 hover:border-white/20"
               disabled={attachedImages.length >= 4}
             >
               <ImagePlus className="w-5 h-5" />
             </Button>
 
             {/* Textarea container */}
-            <div className="flex-1 relative">
+            <div className="flex-1 relative group">
+              <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-r from-white/10 via-white/5 to-white/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-sm" />
               <Textarea
                 placeholder="Paste your conversation transcript here..."
                 value={transcript}
@@ -138,7 +139,7 @@ const FloatingAnalyzeInput = ({
                   }
                 }}
                 className={cn(
-                  "resize-none bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20 pr-12 transition-all duration-200",
+                  "relative resize-none bg-white/[0.03] border border-white/10 text-white/90 placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 pr-12 transition-all duration-300 rounded-xl",
                   isExpanded || transcript.trim() ? "min-h-[120px]" : "min-h-[48px]"
                 )}
               />
@@ -150,10 +151,10 @@ const FloatingAnalyzeInput = ({
               disabled={isAnalyzing || !transcript.trim()}
               size="icon"
               className={cn(
-                "flex-shrink-0 h-10 w-10 rounded-full transition-all",
+                "flex-shrink-0 h-10 w-10 rounded-full transition-all duration-300 border",
                 transcript.trim()
-                  ? "bg-white text-black hover:bg-white/90"
-                  : "bg-white/10 text-white/40"
+                  ? "bg-white/10 text-white border-white/30 hover:bg-white/20 hover:border-white/50 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                  : "bg-white/[0.02] text-white/30 border-white/10"
               )}
             >
               {isAnalyzing ? (
