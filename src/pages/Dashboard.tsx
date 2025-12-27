@@ -3,9 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Brain, Zap, BarChart3, LogOut, Sparkles, Menu } from "lucide-react";
+import FloatingAnalyzeInput from "@/components/dashboard/FloatingAnalyzeInput";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -239,7 +239,7 @@ const Dashboard = () => {
           </div>
         </nav>
 
-        <div className="pt-24 pb-12 px-4 sm:px-6">
+        <div className="pt-24 pb-40 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
             {/* Main IQ Scores */}
             <div className="grid md:grid-cols-3 gap-6">
@@ -454,36 +454,17 @@ const Dashboard = () => {
                 )}
               </TooltipProvider>
             )}
-
-            {/* Analysis Section */}
-            <div ref={analysisRef}>
-              <Card className="glass border-white/10">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-accent" />
-                    <CardTitle className="text-xl text-white">Analyze Conversation</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Textarea
-                    placeholder="Paste your conversation transcript here..."
-                    value={transcript}
-                    onChange={(e) => setTranscript(e.target.value)}
-                    className="min-h-[300px] resize-none bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20"
-                  />
-                  <Button 
-                    onClick={handleAnalyze} 
-                    disabled={isAnalyzing}
-                    className="w-full glow-white"
-                    size="lg"
-                  >
-                    {isAnalyzing ? "Analyzing..." : "Analyze Conversation"}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
+
+        {/* Floating Analyze Input */}
+        <FloatingAnalyzeInput
+          transcript={transcript}
+          setTranscript={setTranscript}
+          isAnalyzing={isAnalyzing}
+          onAnalyze={handleAnalyze}
+          sidebarOpen={sidebarOpen}
+        />
       </div>
 
       {/* Conversation Details Dialog */}
