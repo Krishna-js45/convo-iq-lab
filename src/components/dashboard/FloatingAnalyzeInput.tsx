@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, ImagePlus, X, Send } from "lucide-react";
@@ -22,7 +22,14 @@ const FloatingAnalyzeInput = ({
   const [attachedImages, setAttachedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Trigger mount animation
+    const timer = setTimeout(() => setIsMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -68,11 +75,17 @@ const FloatingAnalyzeInput = ({
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-4",
-        sidebarOpen ? "lg:left-72" : ""
+        "fixed bottom-0 left-0 right-0 z-50 transition-all duration-500 ease-out",
+        sidebarOpen ? "lg:left-72" : "",
+        isMounted ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
       )}
     >
-      <div className="max-w-4xl mx-auto">
+      {/* Gradient fade overlay */}
+      <div className="absolute inset-x-0 -top-16 h-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+      
+      {/* Main container with subtle transparency */}
+      <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 px-4 py-4">
+        <div className="max-w-4xl mx-auto">
           {/* Image previews */}
           {imagePreviews.length > 0 && (
             <div className="flex gap-2 mb-3 flex-wrap">
@@ -172,6 +185,7 @@ const FloatingAnalyzeInput = ({
           </div>
         </div>
       </div>
+    </div>
   );
 };
 
