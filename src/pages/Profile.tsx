@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, LogOut, User, Mail, Calendar, Crown, MessageSquare, TrendingUp, Award, ArrowUp, ArrowDown, Sparkles, ChevronRight, KeyRound, Trash2 } from "lucide-react";
+import { LogOut, User, Mail, Calendar, Crown, MessageSquare, TrendingUp, Award, ArrowUp, ArrowDown, Sparkles, ChevronRight, KeyRound, Trash2 } from "lucide-react";
+import gptiqxIcon from "@/assets/gptiqx-icon.png";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -249,7 +250,7 @@ const Profile = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-            <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <img src={gptiqxIcon} alt="GPTIQX" className="w-5 h-5 sm:w-6 sm:h-6 invert" />
             <span className="text-lg sm:text-xl font-bold text-white">GPTIQX</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">

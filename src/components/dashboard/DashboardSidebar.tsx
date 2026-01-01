@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import gptiqxIcon from "@/assets/gptiqx-icon.png";
 
 interface Conversation {
   id: string;
@@ -112,9 +113,12 @@ const DashboardSidebar = ({
           isOpen ? "w-72 translate-x-0" : "w-72 -translate-x-full"
         )}
       >
-        {/* Header with close button */}
+        {/* Header with logo and close button */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <span className="text-sm font-medium text-white/80">Conversations</span>
+          <div className="flex items-center gap-2">
+            <img src={gptiqxIcon} alt="GPTIQX" className="w-5 h-5 invert" />
+            <span className="text-sm font-medium text-white/80">GPTIQX</span>
+          </div>
           <button
             onClick={onClose}
             className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
