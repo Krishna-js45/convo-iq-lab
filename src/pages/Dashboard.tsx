@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Zap, BarChart3, LogOut, Sparkles, Menu } from "lucide-react";
+import { Zap, BarChart3, LogOut, Sparkles, Menu } from "lucide-react";
+import gptiqxIcon from "@/assets/gptiqx-icon.png";
 import FloatingAnalyzeInput from "@/components/dashboard/FloatingAnalyzeInput";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -207,7 +208,7 @@ const Dashboard = () => {
                   </Button>
                 )}
                 <Link to="/" className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-80 transition-opacity">
-                  <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
+                  <img src={gptiqxIcon} alt="GPTIQX" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 invert" />
                   <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
                 </Link>
               </div>
@@ -246,7 +247,7 @@ const Dashboard = () => {
               <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-white/60">UserIQ</CardTitle>
-                  <Brain className="w-4 h-4 text-white/40" />
+                  <img src={gptiqxIcon} alt="UserIQ" className="w-4 h-4 invert opacity-40" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-4xl font-bold text-white mb-1">
@@ -295,9 +296,9 @@ const Dashboard = () => {
                   {/* UserIQ Breakdown */}
                   <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
                     <CardHeader>
-                      <CardTitle className="text-lg text-white flex items-center gap-2">
-                        <Brain className="w-5 h-5 text-white/60" />
-                        UserIQ Breakdown
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <img src={gptiqxIcon} alt="UserIQ" className="w-5 h-5 invert opacity-60" />
+                      UserIQ Breakdown
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
