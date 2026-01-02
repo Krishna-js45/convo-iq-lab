@@ -208,7 +208,7 @@ const Dashboard = () => {
                   </Button>
                 )}
                 <Link to="/" className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-80 transition-opacity">
-                  <img src={gptiqxIcon} alt="GPTIQX" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+                  <img src={gptiqxIcon} alt="GPTIQX" className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 invert" />
                   <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
                 </Link>
               </div>
@@ -247,7 +247,7 @@ const Dashboard = () => {
               <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300 animate-fade-in">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-white/60">UserIQ</CardTitle>
-                  <img src={gptiqxIcon} alt="UserIQ" className="w-4 h-4 opacity-40" />
+                  <img src={gptiqxIcon} alt="UserIQ" className="w-5 h-5 opacity-40 invert" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-4xl font-bold text-white mb-1">
@@ -297,7 +297,7 @@ const Dashboard = () => {
                   <Card className="glass border-white/10 hover:border-white/20 transition-all duration-300">
                     <CardHeader>
                     <CardTitle className="text-lg text-white flex items-center gap-2">
-                      <img src={gptiqxIcon} alt="UserIQ" className="w-5 h-5 opacity-60" />
+                      <img src={gptiqxIcon} alt="UserIQ" className="w-6 h-6 opacity-60 invert" />
                       UserIQ Breakdown
                       </CardTitle>
                     </CardHeader>

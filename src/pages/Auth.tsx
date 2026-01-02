@@ -81,7 +81,7 @@ const Auth = () => {
         <CardHeader className="text-center space-y-3 sm:space-y-4 pb-6 sm:pb-8">
           <div className="flex justify-center">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/10 flex items-center justify-center">
-              <img src={gptiqxIcon} alt="GPTIQX" className="w-7 h-7 sm:w-8 sm:h-8" />
+              <img src={gptiqxIcon} alt="GPTIQX" className="w-8 h-8 sm:w-10 sm:h-10 invert" />
             </div>
           </div>
           <div>
