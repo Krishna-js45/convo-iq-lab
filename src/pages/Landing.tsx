@@ -38,7 +38,7 @@ const Landing = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 min-w-0">
-            <img src={gptiqxIcon} alt="GPTIQX" className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 invert" />
+            <img src={gptiqxIcon} alt="GPTIQX" className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" />
             <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
           </Link>
           {isLoggedIn ? (
@@ -100,7 +100,7 @@ const Landing = () => {
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             <div className="glass p-6 sm:p-8 rounded-xl hover:bg-white/10 transition-all group">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4 sm:mb-6 group-hover:bg-white/20 transition-colors">
-                <img src={gptiqxIcon} alt="UserIQ" className="w-6 h-6 sm:w-7 sm:h-7 invert" />
+                <img src={gptiqxIcon} alt="UserIQ" className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">UserIQ</h3>
               <p className="text-white/60 text-sm leading-relaxed">

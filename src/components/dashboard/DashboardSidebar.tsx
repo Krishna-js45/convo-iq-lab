@@ -116,7 +116,7 @@ const DashboardSidebar = ({
         {/* Header with logo and close button */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <img src={gptiqxIcon} alt="GPTIQX" className="w-6 h-6 invert" />
+            <img src={gptiqxIcon} alt="GPTIQX" className="w-6 h-6" />
             <span className="text-sm font-medium text-white/80">GPTIQX</span>
           </div>
           <button
