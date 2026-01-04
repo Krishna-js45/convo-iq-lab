@@ -115,10 +115,16 @@ const DashboardSidebar = ({
       >
         {/* Header with logo and close button */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <img src={gptiqxIcon} alt="GPTIQX" className="w-6 h-6" />
-            <span className="text-sm font-medium text-white/80">GPTIQX</span>
-          </div>
+          <button 
+            onClick={() => navigate("/dashboard")}
+            className="hover:opacity-70 transition-opacity"
+          >
+            <img 
+              src={gptiqxIcon} 
+              alt="GPTIQX" 
+              className="h-5 w-5 object-contain" 
+            />
+          </button>
           <button
             onClick={onClose}
             className="p-1.5 rounded-md hover:bg-white/10 transition-colors"

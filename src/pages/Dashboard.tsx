@@ -207,9 +207,15 @@ const Dashboard = () => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 )}
-                <Link to="/" className="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-80 transition-opacity">
-                  <img src={gptiqxIcon} alt="GPTIQX" className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" />
-                  <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
+                <Link 
+                  to="/dashboard" 
+                  className="flex items-center hover:opacity-70 transition-opacity"
+                >
+                  <img 
+                    src={gptiqxIcon} 
+                    alt="GPTIQX" 
+                    className="h-5 w-5 sm:h-6 sm:w-6 object-contain" 
+                  />
                 </Link>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">

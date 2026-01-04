@@ -37,9 +37,15 @@ const Landing = () => {
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 min-w-0">
-            <img src={gptiqxIcon} alt="GPTIQX" className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0" />
-            <span className="text-lg sm:text-xl font-bold text-white truncate">GPTIQX</span>
+          <Link 
+            to={isLoggedIn ? "/dashboard" : "/"} 
+            className="flex items-center hover:opacity-70 transition-opacity"
+          >
+            <img 
+              src={gptiqxIcon} 
+              alt="GPTIQX" 
+              className="h-5 w-5 sm:h-6 sm:w-6 object-contain" 
+            />
           </Link>
           {isLoggedIn ? (
             <Button size="sm" onClick={() => navigate("/dashboard")} className="text-xs sm:text-sm">
