@@ -207,16 +207,8 @@ const Dashboard = () => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 )}
-                <Link 
-                  to="/dashboard" 
-                  className="flex items-center hover:opacity-70 transition-opacity"
-                >
-                  <img 
-                    src={gptiqxIcon} 
-                    alt="GPTIQX" 
-                    className="h-5 w-5 sm:h-6 sm:w-6 object-contain" 
-                  />
-                </Link>
+                {/* Spacer for logo area */}
+                <div className="w-6 sm:w-7" />
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
                 {userProfile && (

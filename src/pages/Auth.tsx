@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock } from "lucide-react";
-import gptiqxIcon from "@/assets/gptiqx-icon.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -79,13 +78,6 @@ const Auth = () => {
     <div className="min-h-screen bg-black grid-pattern flex items-center justify-center px-4 sm:px-6 py-8 sm:py-0">
       <Card className="w-full max-w-md glass border-white/10">
         <CardHeader className="text-center space-y-3 sm:space-y-4 pb-6 sm:pb-8">
-          <div className="flex justify-center">
-            <img 
-              src={gptiqxIcon} 
-              alt="GPTIQX" 
-              className="h-10 w-10 sm:h-12 sm:w-12 object-contain" 
-            />
-          </div>
           <div>
             <CardTitle className="text-2xl sm:text-3xl font-bold text-white mb-2">GPTIQX</CardTitle>
             <p className="text-white/60 text-sm">
