@@ -8,16 +8,16 @@ interface AppShellProps {
 const AppShell = ({ children }: AppShellProps) => {
   return (
     <div className="min-h-screen relative">
-      {/* Global Logo - Fixed position, always visible */}
+      {/* Global Logo - Fixed position, vertically centered in header area */}
       <Link
         to="/dashboard"
-        className="fixed top-4 left-4 z-[100] hover:opacity-70 transition-opacity"
+        className="fixed top-0 left-0 z-[100] h-16 px-4 sm:px-6 flex items-center hover:opacity-70 transition-opacity"
         aria-label="Go to Dashboard"
       >
         <img
           src={gptiqxIcon}
           alt="GPTIQX"
-          className="h-5 sm:h-6 w-auto object-contain"
+          className="h-7 sm:h-8 w-auto object-contain"
         />
       </Link>
 
