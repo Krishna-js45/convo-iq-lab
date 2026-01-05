@@ -18,7 +18,7 @@ const AppShell = ({ children }: AppShellProps) => {
           <img
             src={gptiqxIcon}
             alt="GPTIQX"
-            className="w-9 h-9 sm:w-10 sm:h-10 object-cover rounded-full"
+            className="w-full h-full object-cover"
           />
         </div>
       </Link>
