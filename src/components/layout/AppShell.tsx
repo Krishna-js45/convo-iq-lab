@@ -14,11 +14,11 @@ const AppShell = ({ children }: AppShellProps) => {
         className="fixed top-0 left-0 z-[100] h-16 px-4 sm:px-6 flex items-center"
         aria-label="Go to Dashboard"
       >
-        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center shadow-lg hover:bg-background/90 hover:border-primary/30 hover:shadow-primary/20 transition-all duration-300">
+        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 flex items-center justify-center shadow-lg hover:bg-background/90 hover:border-primary/30 hover:shadow-primary/20 transition-all duration-300 overflow-hidden">
           <img
             src={gptiqxIcon}
             alt="GPTIQX"
-            className="w-6 h-6 sm:w-7 sm:h-7 object-contain rounded-full"
+            className="w-9 h-9 sm:w-10 sm:h-10 object-cover rounded-full"
           />
         </div>
       </Link>
