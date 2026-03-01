@@ -40,29 +40,39 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`
-          }
-        });
-        if (error) throw error;
-        toast({
-          title: "Success",
-          description: "Account created successfully!",
-        });
-        // Navigation handled by onAuthStateChange
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        // Navigation handled by onAuthStateChange
+    const attemptAuth = async (retries = 2): Promise<void> => {
+      try {
+        if (isSignUp) {
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/dashboard`
+            }
+          });
+          if (error) throw error;
+          toast({
+            title: "Success",
+            description: "Account created successfully!",
+          });
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (error) throw error;
+        }
+      } catch (error: any) {
+        if (error.message === "Failed to fetch" && retries > 0) {
+          await new Promise(r => setTimeout(r, 1000));
+          return attemptAuth(retries - 1);
+        }
+        throw error;
       }
+    };
+
+    try {
+      await attemptAuth();
     } catch (error: any) {
       const message = error.message === "Failed to fetch"
         ? "Network error. Please check your connection and try again."
