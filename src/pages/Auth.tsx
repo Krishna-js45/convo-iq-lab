@@ -15,10 +15,15 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check if user is already logged in
+  // Check if user is already logged in, clear stale sessions
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || (!session && localStorage.getItem('sb-aqhjhyefmwjggtainxdz-auth-token'))) {
+        // Clear stale/corrupted session data that causes endless refresh loops
+        await supabase.auth.signOut();
+        localStorage.removeItem('sb-aqhjhyefmwjggtainxdz-auth-token');
+      }
       if (session) {
         navigate("/dashboard", { replace: true });
       }
