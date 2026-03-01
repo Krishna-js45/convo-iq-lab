@@ -64,9 +64,12 @@ const Auth = () => {
         // Navigation handled by onAuthStateChange
       }
     } catch (error: any) {
+      const message = error.message === "Failed to fetch"
+        ? "Network error. Please check your connection and try again."
+        : error.message;
       toast({
         title: "Error",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
